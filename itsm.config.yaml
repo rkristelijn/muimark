@@ -1,0 +1,94 @@
+# ITSM Configuration
+# Defines the folder structure, field definitions, and data source
+# ITIL-compatible: Incident, Change, Problem, Request, Knowledge, CMDB
+
+# Path to the markdown repository
+dataDir: /home/gius/git/iron-legion
+
+# Folder definitions (appear in sidebar)
+folders:
+  # --- Service Operation ---
+  - id: incidents
+    label: Incidents
+    path: incidents
+    icon: warning
+    fields:
+      - { name: status, label: Status, type: select, options: [Investigating, Identified, Resolved, Closed] }
+      - { name: severity, label: Severity, type: select, options: [Critical, High, Medium, Low] }
+      - { name: date, label: Date, type: date, aliases: [datum, detected] }
+      - { name: duration, label: Duration, type: text, aliases: [duur] }
+      - { name: impact, label: Impact, type: text }
+
+  - id: problems
+    label: Problems
+    path: problems
+    icon: bug_report
+    fields:
+      - { name: status, label: Status, type: select, options: [Identified, Investigating, "Known Error", Resolved] }
+      - { name: created, label: Created, type: date }
+      - { name: resolved, label: Resolved, type: date }
+      - { name: related_incidents, label: Related Incidents, type: text }
+
+  # --- Service Transition ---
+  - id: changes
+    label: Changes
+    path: changes
+    icon: build
+    fields:
+      - { name: status, label: Status, type: select, options: [Proposed, Planned, Implementing, Validating, Closed, "Rolled Back"], aliases: [status] }
+      - { name: priority, label: Priority, type: select, options: [Critical, High, Medium, Low] }
+      - { name: created, label: Created, type: date, aliases: [aangemaakt] }
+      - { name: scheduled, label: Scheduled, type: date }
+      - { name: completed, label: Completed, type: date }
+
+  # --- Service Design ---
+  - id: requests
+    label: Requests
+    path: docs/research
+    icon: science
+    fields:
+      - { name: status, label: Status, type: select, options: [Requested, Researching, Approved, Rejected, Delivered] }
+      - { name: created, label: Created, type: date }
+      - { name: delivered, label: Delivered, type: date }
+
+  # --- Knowledge Management ---
+  - id: runbooks
+    label: Runbooks
+    path: docs/runbooks
+    icon: menu_book
+    fields:
+      - { name: status, label: Status, type: select, options: [Draft, Active, Deprecated] }
+
+  - id: adrs
+    label: Decisions (ADR)
+    path: docs/adr
+    icon: architecture
+    fields:
+      - { name: status, label: Status, type: select, options: [Proposed, Accepted, Deprecated, Superseded, Rejected] }
+      - { name: date, label: Date, type: date }
+      - { name: supersedes, label: Supersedes, type: text }
+
+  # --- CMDB ---
+  - id: cmdb-hosts
+    label: "CMDB: Hosts"
+    path: cmdb/hosts
+    icon: dns
+    fields:
+      - { name: status, label: Status, type: select, options: [Active, Maintenance, Decommissioned] }
+      - { name: type, label: Type, type: select, options: [server, network, storage, iot] }
+      - { name: ip, label: IP Address, type: text }
+      - { name: os, label: OS, type: text }
+      - { name: ram, label: RAM, type: text }
+      - { name: location, label: Location, type: text }
+
+  - id: cmdb-services
+    label: "CMDB: Services"
+    path: cmdb/services
+    icon: cloud
+    fields:
+      - { name: status, label: Status, type: select, options: [Active, Degraded, Down, Planned] }
+      - { name: host, label: Host, type: text }
+      - { name: port, label: Port, type: text }
+      - { name: url, label: URL, type: text }
+      - { name: depends_on, label: Depends On, type: text }
+
