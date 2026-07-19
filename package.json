@@ -1,7 +1,11 @@
 {
-  "name": "itsm",
-  "version": "0.1.0",
-  "private": true,
+  "name": "muimark",
+  "version": "0.0.1",
+  "description": "A local-first, file-based CRUD UI for markdown files with YAML frontmatter. Configurable folders, fields, and columns — powered by MUI and TanStack Table.",
+  "private": false,
+  "bin": {
+    "muimark": "./bin/muimark.js"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -14,6 +18,43 @@
     "typecheck": "tsc --noEmit",
     "check": "npm run lint && npm run test && npm run build"
   },
+  "keywords": [
+    "markdown",
+    "mui",
+    "material-ui",
+    "tanstack-table",
+    "crud",
+    "local-first",
+    "file-based",
+    "yaml",
+    "frontmatter",
+    "itsm",
+    "datagrid",
+    "dashboard",
+    "next.js"
+  ],
+  "author": "Remi Kristelijn <rkristelijn@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rkristelijn/muimark.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rkristelijn/muimark/issues"
+  },
+  "homepage": "https://github.com/rkristelijn/muimark#readme",
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    ".next/standalone/",
+    "public/",
+    "package.json",
+    "README.md",
+    "LICENSE"
+  ],
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
@@ -41,11 +82,5 @@
     "jsdom": "^29.1.1",
     "typescript": "^5",
     "vitest": "^4.1.10"
-  },
-  "description": "itsm",
-  "author": "Remi Kristelijn <rkristelijn@gmail.com>",
-  "engines": {
-    "node": ">=24"
-  },
-  "license": "MIT"
+  }
 }
