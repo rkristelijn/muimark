@@ -4,6 +4,17 @@ import matter from "gray-matter";
 import { getConfig, getFolderDef, getAbsolutePath } from "./config";
 import type { FolderDef } from "./config";
 
+/**
+ * Validate that a filename is safe (no path separators or traversal)
+ */
+function sanitizeFilename(name: string): string {
+  const sanitized = path.basename(name);
+  if (sanitized !== name || name.includes("..")) {
+    throw new Error(`Invalid filename: ${name}`);
+  }
+  return sanitized;
+}
+
 export interface FileEntry {
   id: string;
   filename: string;
@@ -45,8 +56,11 @@ function extractInlineMetadata(content: string): Record<string, string> {
   const pattern = /\*\*(\w[\w\s]*?):\*\*\s*(.+)/g;
   let match;
   while ((match = pattern.exec(content)) !== null) {
-    const key = match[1].trim().toLowerCase().replace(/\s+/g, "_");
-    const value = match[2].trim();
+    const rawKey = match[1];
+    const rawValue = match[2];
+    if (!rawKey || !rawValue) continue;
+    const key = rawKey.trim().toLowerCase().replace(/\s+/g, "_");
+    const value = rawValue.trim();
     meta[key] = value;
   }
   return meta;
@@ -65,6 +79,7 @@ export function listFiles(folderId: string): FileEntry[] {
   const files = fs.readdirSync(dirPath).filter((f) => f.endsWith(".md"));
 
   return files.map((filename) => {
+    // nosemgrep: path-join-resolve-traversal — filename from fs.readdirSync, not user input
     const filePath = path.join(dirPath, filename);
     const raw = fs.readFileSync(filePath, "utf-8");
     const { data, content } = matter(raw);
@@ -77,7 +92,7 @@ export function listFiles(folderId: string): FileEntry[] {
 
     // Extract title from first H1 or filename
     const titleMatch = content.match(/^#\s+(.+)$/m);
-    let title = (frontmatter.title as string) || (titleMatch ? titleMatch[1] : filename.replace(".md", ""));
+    let title = (frontmatter.title as string) || titleMatch?.[1] || filename.replace(".md", "");
 
     // Strip ID prefix from title if present (e.g. "I-001: Title" → "Title")
     const id = filename.replace(".md", "");
@@ -102,7 +117,7 @@ export function getFile(folderId: string, fileId: string): FileDetail | null {
   const folder = getFolderDef(folderId);
   if (!folder) return null;
 
-  const filePath = path.join(getAbsolutePath(folder.path), `${fileId}.md`);
+  const filePath = path.join(getAbsolutePath(folder.path), sanitizeFilename(`${fileId}.md`));
   if (!fs.existsSync(filePath)) return null;
 
   const raw = fs.readFileSync(filePath, "utf-8");
@@ -115,7 +130,7 @@ export function getFile(folderId: string, fileId: string): FileDetail | null {
   const frontmatter = resolveAliases(rawMeta, folder);
 
   const titleMatch = content.match(/^#\s+(.+)$/m);
-  let title = (frontmatter.title as string) || (titleMatch ? titleMatch[1] : fileId);
+  let title = (frontmatter.title as string) || titleMatch?.[1] || fileId;
 
   // Strip ID prefix from title
   const idPrefix = `${fileId}: `;
@@ -148,7 +163,7 @@ export function saveFile(
   const dirPath = getAbsolutePath(folder.path);
   if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
 
-  const filePath = path.join(dirPath, `${fileId}.md`);
+  const filePath = path.join(dirPath, sanitizeFilename(`${fileId}.md`));
   const output = matter.stringify(content, frontmatter);
   fs.writeFileSync(filePath, output, "utf-8");
 }

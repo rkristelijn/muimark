@@ -3,8 +3,6 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   Box,
-  Card,
-  CardContent,
   Chip,
   Divider,
   Grid,
@@ -30,72 +28,8 @@ import {
   Refresh,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
-
-interface DashboardMetrics {
-  timestamp: string;
-  incidents: {
-    total: number;
-    open: number;
-    closed: number;
-    thisWeek: number;
-    thisMonth: number;
-    thisYear: number;
-    critical: number;
-    high: number;
-    openActions: number;
-    openList: { id: string; title: string; actions: number }[];
-  };
-  changes: {
-    total: number;
-    open: number;
-    inProgress: number;
-    planned: number;
-    closed: number;
-    openList: { id: string; title: string; status: string }[];
-  };
-  problems: {
-    total: number;
-    open: number;
-  };
-  quality: {
-    resolutionRate: number;
-    incidentsPerWeek: number;
-  };
-  risks: string[];
-}
-
-function KpiCard({
-  title,
-  value,
-  subtitle,
-  color,
-  icon,
-}: {
-  title: string;
-  value: string | number;
-  subtitle?: string;
-  color?: string;
-  icon?: React.ReactNode;
-}) {
-  return (
-    <Card variant="outlined" sx={{ height: "100%" }}>
-      <CardContent sx={{ textAlign: "center", py: 2 }}>
-        {icon && <Box sx={{ color: color || "text.secondary", mb: 0.5 }}>{icon}</Box>}
-        <Typography variant="h3" sx={{ color: color || "text.primary", fontWeight: 700 }}>
-          {value}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {title}
-        </Typography>
-        {subtitle && (
-          <Typography variant="caption" color="text.secondary">
-            {subtitle}
-          </Typography>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
+import { KpiCard } from "@/components/KpiCard";
+import type { DashboardMetrics } from "@/lib/types";
 
 function StatusChip({ status }: { status: string }) {
   let color: "default" | "success" | "warning" | "error" | "info" = "default";
@@ -162,7 +96,7 @@ export default function DashboardPage() {
             title="Open Incidents"
             value={data.incidents.open}
             subtitle={`of ${data.incidents.total} total`}
-            color={data.incidents.open > 0 ? "#d32f2f" : "#2e7d32"}
+            color={data.incidents.open > 0 ? "error.main" : "success.main"}
             icon={<Warning />}
           />
         </Grid>
@@ -171,7 +105,7 @@ export default function DashboardPage() {
             title="Open Changes"
             value={data.changes.open}
             subtitle={`${data.changes.inProgress} in progress`}
-            color={data.changes.inProgress > 0 ? "#ed6c02" : undefined}
+            color={data.changes.inProgress > 0 ? "warning.main" : undefined}
             icon={<Build />}
           />
         </Grid>
@@ -188,7 +122,7 @@ export default function DashboardPage() {
             title="Resolution Rate"
             value={`${data.quality.resolutionRate}%`}
             subtitle={`${data.quality.incidentsPerWeek}/week avg`}
-            color={data.quality.resolutionRate > 80 ? "#2e7d32" : "#ed6c02"}
+            color={data.quality.resolutionRate > 80 ? "success.main" : "warning.main"}
             icon={<CheckCircle />}
           />
         </Grid>
@@ -250,7 +184,7 @@ export default function DashboardPage() {
           <Grid size={{ xs: 12, md: 6 }}>
             <Paper variant="outlined" sx={{ p: 2, height: "100%" }}>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                <Warning fontSize="small" sx={{ verticalAlign: "middle", mr: 0.5, color: "#d32f2f" }} />
+                <Warning fontSize="small" sx={{ verticalAlign: "middle", mr: 0.5, color: "error.main" }} />
                 Open Incidents ({data.incidents.open})
               </Typography>
               <Divider sx={{ mb: 1 }} />
@@ -281,7 +215,7 @@ export default function DashboardPage() {
           <Grid size={{ xs: 12, md: 6 }}>
             <Paper variant="outlined" sx={{ p: 2, height: "100%" }}>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                <Build fontSize="small" sx={{ verticalAlign: "middle", mr: 0.5, color: "#1976d2" }} />
+                <Build fontSize="small" sx={{ verticalAlign: "middle", mr: 0.5, color: "primary.main" }} />
                 Open Changes ({data.changes.open})
               </Typography>
               <Divider sx={{ mb: 1 }} />

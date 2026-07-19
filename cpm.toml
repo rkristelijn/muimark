@@ -1,0 +1,15 @@
+# cpm.toml — project quality configuration
+# https://github.com/rkristelijn/cpm
+
+[project]
+name = "itsm"
+level = 2
+lang = "typescript"
+build = "npm"
+
+[limits]
+file-lines = 300
+files-per-dir = 15
+
+[checks]
+check-dutch = true

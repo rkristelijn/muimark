@@ -41,5 +41,14 @@ export function getFolderDef(folderId: string): FolderDef | undefined {
 
 export function getAbsolutePath(relativePath: string): string {
   const config = getConfig();
-  return path.join(config.dataDir, relativePath);
+  const baseDir = path.resolve(config.dataDir);
+  // nosemgrep: path-join-resolve-traversal — validated below with startsWith check
+  const resolved = path.resolve(baseDir, relativePath);
+
+  // Prevent path traversal: resolved path must stay within baseDir
+  if (!resolved.startsWith(baseDir + path.sep) && resolved !== baseDir) {
+    throw new Error(`Path traversal detected: ${relativePath}`);
+  }
+
+  return resolved;
 }
