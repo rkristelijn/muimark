@@ -7,6 +7,7 @@
 ## Problem
 
 MUI Toolpad Core provided:
+
 - **DashboardLayout** — sidebar + topbar in a single component
 - **Navigation** — declarative config (segments, icons, titles)
 - **PageContainer** — breadcrumbs, title, actions
@@ -107,7 +108,7 @@ Improve the current custom MUI layout step by step. Add AppBar, theme switching,
 
 **Option B (MUI CRUD Dashboard Template)** as a base, supplemented with **Option E** for custom pieces.
 
-### Rationale:
+### Rationale
 
 1. **MUI themselves recommend this** as a Toolpad replacement — it's the official migration path
 2. **No new dependency** — we already use MUI v9, this is just more MUI
@@ -116,7 +117,7 @@ Improve the current custom MUI layout step by step. Add AppBar, theme switching,
 5. **Incremental** — we can introduce it sidebar-by-sidebar without a big-bang refactor
 6. **Toolpad-like experience** without the risk of a dead project
 
-### Why NOT react-admin or Refine:
+### Why NOT react-admin or Refine
 
 - itsm is a **markdown-backed** tool with a file-system as "database" — react-admin/Refine expect a REST/GraphQL API with standard CRUD semantics
 - We want **Next.js App Router** as routing — react-admin is SPA-first with its own router

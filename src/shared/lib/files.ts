@@ -17,6 +17,7 @@ function sanitizeFilename(name: string): string {
 
 export interface FileEntry {
   id: string;
+  displayId: string;
   filename: string;
   title: string;
   frontmatter: Record<string, unknown>;
@@ -76,7 +77,39 @@ export function listFiles(folderId: string): FileEntry[] {
   const dirPath = getAbsolutePath(folder.path);
   if (!fs.existsSync(dirPath)) return [];
 
-  const files = fs.readdirSync(dirPath).filter((f) => f.endsWith(".md"));
+  let files = fs.readdirSync(dirPath).filter((f) => f.endsWith(".md"));
+
+  // Auto-repair: rename files without ID prefix
+  if (folder.idPattern) {
+    const idRegex = new RegExp(folder.idPattern, "i");
+    const needsRepair = files.filter((f) => !idRegex.test(f.replace(".md", "")));
+
+    if (needsRepair.length > 0) {
+      // Find the highest existing number
+      const allNumbers = files
+        .map((f) => f.replace(".md", ""))
+        .map((f) => { const m = f.match(/(\d+)/); return m?.[1] ? parseInt(m[1], 10) : 0; })
+        .filter((n) => !isNaN(n));
+      let nextNum = allNumbers.length > 0 ? Math.max(...allNumbers) + 1 : 1;
+
+      // Determine prefix from idPattern (extract letters before \d)
+      const prefixMatch = folder.idPattern.match(/\^?\(?([\w-]+?)\\d/);
+      const prefix = prefixMatch?.[1]?.replace(/[\\^(]/g, "") || folderId.charAt(0).toUpperCase() + "-";
+
+      for (const filename of needsRepair) {
+        const num = String(nextNum).padStart(3, "0");
+        const basePart = filename.replace(".md", "");
+        const newFilename = `${prefix}${num}-${basePart}.md`;
+        const oldPath = path.join(dirPath, filename);
+        const newPath = path.join(dirPath, newFilename);
+        fs.renameSync(oldPath, newPath);
+        nextNum++;
+      }
+
+      // Re-read directory after renames
+      files = fs.readdirSync(dirPath).filter((f) => f.endsWith(".md"));
+    }
+  }
 
   return files.map((filename) => {
     // nosemgrep: path-join-resolve-traversal — filename from fs.readdirSync, not user input
@@ -94,38 +127,33 @@ export function listFiles(folderId: string): FileEntry[] {
     const titleMatch = content.match(/^#\s+(.+)$/m);
     let title = (frontmatter.title as string) || titleMatch?.[1] || filename.replace(".md", "");
 
-    // Extract ID using idPattern regex, or fall back to filename
+    // Extract displayId using idPattern regex (case-insensitive), or leave empty
     const basename = filename.replace(".md", "");
-    let id = basename;
+    let displayId = "";
     if (folder.idPattern) {
-      const idRegex = new RegExp(folder.idPattern);
+      const idRegex = new RegExp(folder.idPattern, "i");
       const idMatch = basename.match(idRegex);
       if (idMatch?.[1]) {
-        id = idMatch[1];
+        displayId = idMatch[1].toUpperCase();
         // Strip ID and common separators from title
-        const separators = [`${id}: `, `${id} - `, `${id}-`, `${id} `];
+        const separators = [`${idMatch[1]}: `, `${idMatch[1]} - `, `${idMatch[1]}-`, `${idMatch[1]} `];
         for (const sep of separators) {
-          if (title.startsWith(sep)) {
+          if (title.toLowerCase().startsWith(sep.toLowerCase())) {
             title = title.slice(sep.length);
             break;
           }
         }
         // Also strip from filename-derived title
         if (title === basename) {
-          const rest = basename.slice(id.length).replace(/^[-_ ]+/, "");
+          const rest = basename.slice(idMatch[1].length).replace(/^[-_ ]+/, "");
           if (rest) title = rest.replace(/[-_]/g, " ");
         }
-      }
-    } else {
-      // Legacy: strip ID prefix from title if present (e.g. "I-001: Title" → "Title")
-      const idPrefix = `${id}: `;
-      if (title.startsWith(idPrefix)) {
-        title = title.slice(idPrefix.length);
       }
     }
 
     return {
-      id,
+      id: basename,
+      displayId,
       filename,
       title,
       frontmatter,
@@ -155,14 +183,27 @@ export function getFile(folderId: string, fileId: string): FileDetail | null {
   const titleMatch = content.match(/^#\s+(.+)$/m);
   let title = (frontmatter.title as string) || titleMatch?.[1] || fileId;
 
+  // Extract displayId using idPattern (case-insensitive)
+  let displayId = "";
+  if (folder.idPattern) {
+    const idRegex = new RegExp(folder.idPattern, "i");
+    const idMatch = fileId.match(idRegex);
+    if (idMatch?.[1]) {
+      displayId = idMatch[1].toUpperCase();
+    }
+  }
+
   // Strip ID prefix from title
-  const idPrefix = `${fileId}: `;
-  if (title.startsWith(idPrefix)) {
-    title = title.slice(idPrefix.length);
+  if (displayId) {
+    const idPrefix = `${displayId}: `;
+    if (title.toUpperCase().startsWith(idPrefix.toUpperCase())) {
+      title = title.slice(idPrefix.length);
+    }
   }
 
   return {
     id: fileId,
+    displayId,
     filename: `${fileId}.md`,
     title,
     frontmatter,

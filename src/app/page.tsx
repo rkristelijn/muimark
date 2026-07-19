@@ -24,10 +24,10 @@ export default function Home() {
     >
       {selectedFolder && (
         <Box sx={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-          <Box sx={{ flex: 1, overflow: "auto", minHeight: 0 }}>
-            <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
-              <CreateDialog folderId={selectedFolder} />
-            </Box>
+          <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
+            <CreateDialog folderId={selectedFolder} onCreated={setSelectedFile} />
+          </Box>
+          <Box sx={{ flex: 1, overflow: "hidden", minHeight: 0 }}>
             <FileGrid
               folderId={selectedFolder}
               selectedFile={selectedFile}
@@ -45,7 +45,7 @@ export default function Home() {
                 borderColor: "divider",
               }}
             >
-              <DetailPanel folderId={selectedFolder} fileId={selectedFile} />
+              <DetailPanel key={selectedFile} folderId={selectedFolder} fileId={selectedFile} />
             </Box>
           )}
         </Box>

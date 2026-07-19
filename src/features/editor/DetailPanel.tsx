@@ -1,9 +1,8 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Box, Button, CircularProgress, Typography } from "@mui/material";
-import { Save } from "@mui/icons-material";
-import { useState, useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Box, CircularProgress, Typography, Chip } from "@mui/material";
+import { useState, useCallback, useRef } from "react";
 import dynamic from "next/dynamic";
 import type { FileDetail } from "@/shared/lib/files";
 
@@ -19,45 +18,86 @@ export function DetailPanel({ folderId, fileId }: DetailPanelProps) {
   const queryClient = useQueryClient();
   const [editedContent, setEditedContent] = useState<string>("");
   const [isDirty, setIsDirty] = useState(false);
-  const [syncedFileId, setSyncedFileId] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "dirty" | "error">("saved");
+  const [initialized, setInitialized] = useState(false);
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const contentRef = useRef("");
+  const fileRef = useRef<FileDetail | null>(null);
 
   const { data: file, isLoading } = useQuery<FileDetail>({
     queryKey: ["file", folderId, fileId],
     queryFn: () => fetch(`/api/folders/${folderId}/${fileId}`).then((r) => r.json()),
   });
 
-  // Sync server content to local state when file changes (not an effect-sets-state anti-pattern:
-  // this is synchronizing external data → local edit buffer, only runs when fileId changes)
-  if (file?.content && syncedFileId !== fileId) {
+  // Initialize content from server (only once per mount)
+  if (file?.content && !initialized) {
     setEditedContent(file.content);
-    setIsDirty(false);
-    setSyncedFileId(fileId);
+    contentRef.current = file.content;
+    fileRef.current = file;
+    setInitialized(true);
   }
 
-  const handleChange = useCallback((newContent: string) => {
-    setEditedContent(newContent);
-    setIsDirty(true);
-  }, []);
+  if (file && fileRef.current !== file) {
+    fileRef.current = file;
+  }
 
-  const saveMutation = useMutation({
-    mutationFn: async () => {
+  const doSave = useCallback(async () => {
+    const content = contentRef.current;
+    const frontmatter = fileRef.current?.frontmatter || {};
+    if (!content) return;
+
+    setSaveStatus("saving");
+
+    // Optimistic update: write to cache immediately
+    queryClient.setQueryData(["file", folderId, fileId], (old: FileDetail | undefined) => {
+      if (!old) return old;
+      return { ...old, content };
+    });
+
+    try {
       const res = await fetch(`/api/folders/${folderId}/${fileId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          frontmatter: file?.frontmatter || {},
-          content: editedContent,
-        }),
+        body: JSON.stringify({ frontmatter, content }),
       });
       if (!res.ok) throw new Error("Save failed");
-      return res.json();
-    },
-    onSuccess: () => {
       setIsDirty(false);
-      queryClient.invalidateQueries({ queryKey: ["file", folderId, fileId] });
+      setSaveStatus("saved");
       queryClient.invalidateQueries({ queryKey: ["folder", folderId] });
-    },
-  });
+    } catch {
+      setSaveStatus("error");
+      // Rollback: refetch from server
+      queryClient.invalidateQueries({ queryKey: ["file", folderId, fileId] });
+    }
+  }, [folderId, fileId, queryClient]);
+
+  // Debounced auto-save: save 1s after last edit
+  const scheduleAutoSave = useCallback(() => {
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+    debounceTimer.current = setTimeout(() => {
+      doSave();
+    }, 1000);
+  }, [doSave]);
+
+  // Save immediately (for blur)
+  const saveNow = useCallback(() => {
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+    if (isDirty) {
+      doSave();
+    }
+  }, [doSave, isDirty]);
+
+  const handleChange = useCallback((newContent: string) => {
+    setEditedContent(newContent);
+    contentRef.current = newContent;
+    setIsDirty(true);
+    setSaveStatus("dirty");
+    scheduleAutoSave();
+  }, [scheduleAutoSave]);
 
   if (isLoading) {
     return (
@@ -85,19 +125,24 @@ export function DetailPanel({ folderId, fileId }: DetailPanelProps) {
       >
         <Typography variant="subtitle2" color="text.secondary">
           {file.filename}
-          {isDirty && " (unsaved)"}
         </Typography>
-        <Button
+        <Chip
+          label={
+            saveStatus === "saved" ? "Saved" :
+            saveStatus === "saving" ? "Saving..." :
+            saveStatus === "error" ? "Error saving" :
+            "Unsaved"
+          }
           size="small"
-          variant="contained"
-          startIcon={<Save />}
-          disabled={!isDirty || saveMutation.isPending}
-          onClick={() => saveMutation.mutate()}
-        >
-          {saveMutation.isPending ? "Saving..." : "Save"}
-        </Button>
+          color={
+            saveStatus === "saved" ? "success" :
+            saveStatus === "error" ? "error" :
+            "default"
+          }
+          variant="outlined"
+        />
       </Box>
-      <Box sx={{ flex: 1, overflow: "auto", p: 1 }}>
+      <Box sx={{ flex: 1, overflow: "auto", p: 1 }} onBlur={saveNow}>
         <MarkdownEditor content={editedContent} onChange={handleChange} />
       </Box>
     </Box>

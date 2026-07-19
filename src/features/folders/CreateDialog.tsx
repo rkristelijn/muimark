@@ -14,9 +14,10 @@ import { Add } from "@mui/icons-material";
 
 interface CreateDialogProps {
   folderId: string;
+  onCreated?: (fileId: string) => void;
 }
 
-export function CreateDialog({ folderId }: CreateDialogProps) {
+export function CreateDialog({ folderId, onCreated }: CreateDialogProps) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const queryClient = useQueryClient();
@@ -34,10 +35,13 @@ export function CreateDialog({ folderId }: CreateDialogProps) {
       }
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["folder", folderId] });
       setOpen(false);
       setTitle("");
+      if (onCreated && data.id) {
+        onCreated(data.id);
+      }
     },
   });
 

@@ -8,6 +8,7 @@
 ## Context
 
 The itsm app needs a data grid with:
+
 - Column reordering (user-defined column order)
 - Column visibility (show/hide columns)
 - Sorting (multi-column)
@@ -24,7 +25,7 @@ Use **TanStack Table** (headless, MIT licensed) as the data engine, rendering wi
 
 ## Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────┐
 │  TanStack Table (headless engine)           │
 │  - columnOrder state                        │
@@ -95,6 +96,7 @@ columnConfig:
 ```
 
 API endpoints:
+
 - `GET /api/columns/[folderId]` — read column config
 - `PUT /api/columns/[folderId]` — save column config
 

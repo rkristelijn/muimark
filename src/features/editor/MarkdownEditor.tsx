@@ -22,6 +22,7 @@ import {
   type MDXEditorMethods,
 } from "@mdxeditor/editor";
 import "@mdxeditor/editor/style.css";
+import "./editor-dark.css";
 import { useRef, useEffect } from "react";
 
 interface MarkdownEditorProps {
@@ -43,7 +44,9 @@ export default function MarkdownEditor({ content, onChange }: MarkdownEditorProp
       ref={editorRef}
       markdown={content}
       onChange={onChange}
-      contentEditableClassName="prose prose-invert max-w-none"
+      contentEditableClassName="mdx-editor-content"
+      className="mdx-editor-dark"
+      suppressHtmlProcessing={true}
       plugins={[
         headingsPlugin(),
         listsPlugin(),

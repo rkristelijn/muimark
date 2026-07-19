@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   useReactTable,
   getCoreRowModel,
@@ -23,14 +23,13 @@ import {
   TableSortLabel,
   TablePagination,
   Box,
-  Chip,
-  Typography,
 } from "@mui/material";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { FileEntry } from "@/shared/lib/files";
 import type { FolderDef } from "@/shared/lib/config";
 import { useColumnConfig } from "./useColumnConfig";
 import { ColumnConfigButton } from "./ColumnConfigButton";
+import { EditableCell } from "./EditableCell";
 
 interface FileGridProps {
   folderId: string;
@@ -61,6 +60,33 @@ export function FileGrid({
     queryFn: () => fetch(`/api/folders/${folderId}`).then((r) => r.json()),
   });
 
+  const queryClient = useQueryClient();
+
+  // Save a single field in a file's frontmatter
+  const saveMutation = useMutation({
+    mutationFn: async ({ fileId, fieldName, value }: { fileId: string; fieldName: string; value: string }) => {
+      // Get current file to preserve content and other frontmatter
+      const fileRes = await fetch(`/api/folders/${folderId}/${fileId}`);
+      if (!fileRes.ok) throw new Error("Failed to load file");
+      const file = await fileRes.json();
+
+      const updatedFrontmatter = { ...file.frontmatter, [fieldName]: value };
+      const res = await fetch(`/api/folders/${folderId}/${fileId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ frontmatter: updatedFrontmatter, content: file.content }),
+      });
+      if (!res.ok) throw new Error("Save failed");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["folder", folderId] });
+    },
+  });
+
+  const handleCellSave = useCallback((fileId: string, fieldName: string, value: string) => {
+    saveMutation.mutate({ fileId, fieldName, value });
+  }, [saveMutation]);
+
   const { columnConfig, updateColumnConfig } = useColumnConfig(folderId);
 
   // Sync column config from server into TanStack Table state
@@ -82,7 +108,7 @@ export function FileGrid({
     if (!data?.folder) return [];
 
     const baseCols = [
-      columnHelper.accessor("id", {
+      columnHelper.accessor("displayId", {
         id: "id",
         header: "ID",
         cell: (info) => info.getValue(),
@@ -98,14 +124,15 @@ export function FileGrid({
       columnHelper.accessor((row) => row.frontmatter[field.name] as string, {
         id: field.name,
         header: field.label,
-        cell: (info) => {
-          const val = info.getValue();
-          if (!val) return null;
-          if (field.type === "select") {
-            return <Chip label={val} size="small" variant="outlined" />;
-          }
-          return <span>{String(val)}</span>;
-        },
+        cell: (info) => (
+          <EditableCell
+            value={info.getValue()}
+            field={field}
+            fileId={info.row.original.id}
+            folderId={folderId}
+            onSave={handleCellSave}
+          />
+        ),
       })
     );
 

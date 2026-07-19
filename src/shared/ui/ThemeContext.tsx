@@ -42,6 +42,7 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
     setMode((prev) => {
       const next = prev === "dark" ? "light" : "dark";
       localStorage.setItem(STORAGE_KEY, next);
+      document.documentElement.setAttribute("data-mui-color-scheme", next);
       return next;
     });
   }, []);
@@ -53,6 +54,11 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
       }),
     [mode]
   );
+
+  // Set initial data attribute
+  if (typeof window !== "undefined") {
+    document.documentElement.setAttribute("data-mui-color-scheme", mode);
+  }
 
   return (
     <ThemeContext value={{ mode, toggleTheme }}>
