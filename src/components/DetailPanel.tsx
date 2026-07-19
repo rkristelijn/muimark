@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Box, Button, CircularProgress, Typography } from "@mui/material";
 import { Save } from "@mui/icons-material";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import type { FileDetail } from "@/lib/files";
 
@@ -19,18 +19,20 @@ export function DetailPanel({ folderId, fileId }: DetailPanelProps) {
   const queryClient = useQueryClient();
   const [editedContent, setEditedContent] = useState<string>("");
   const [isDirty, setIsDirty] = useState(false);
+  const [syncedFileId, setSyncedFileId] = useState<string | null>(null);
 
   const { data: file, isLoading } = useQuery<FileDetail>({
     queryKey: ["file", folderId, fileId],
     queryFn: () => fetch(`/api/folders/${folderId}/${fileId}`).then((r) => r.json()),
   });
 
-  useEffect(() => {
-    if (file?.content) {
-      setEditedContent(file.content);
-      setIsDirty(false);
-    }
-  }, [file]);
+  // Sync server content to local state when file changes (not an effect-sets-state anti-pattern:
+  // this is synchronizing external data → local edit buffer, only runs when fileId changes)
+  if (file?.content && syncedFileId !== fileId) {
+    setEditedContent(file.content);
+    setIsDirty(false);
+    setSyncedFileId(fileId);
+  }
 
   const handleChange = useCallback((newContent: string) => {
     setEditedContent(newContent);

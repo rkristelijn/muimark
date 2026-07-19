@@ -57,12 +57,6 @@ function extractSeverity(file: FileEntry): string {
   return typeof sev === "string" ? sev : "";
 }
 
-function countOpenActions(title: string): number {
-  // We can't easily count [ ] from frontmatter, but we track from title hints
-  // For a proper count we'd need to read full content — skip for now
-  return 0;
-}
-
 function isWithinDays(dateStr: string, days: number): boolean {
   const date = new Date(dateStr);
   const ago = new Date();
