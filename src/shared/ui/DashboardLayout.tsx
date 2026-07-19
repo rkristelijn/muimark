@@ -56,6 +56,7 @@ interface DashboardLayoutProps {
   children: ReactNode;
   selectedFolder: string | null;
   onSelectFolder: (id: string) => void;
+  onHome: () => void;
   searchValue: string;
   onSearchChange: (value: string) => void;
 }
@@ -64,12 +65,24 @@ export function DashboardLayout({
   children,
   selectedFolder,
   onSelectFolder,
+  onHome,
   searchValue,
   onSearchChange,
 }: DashboardLayoutProps) {
   const { mode, toggleTheme } = useThemeMode();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("itsm-sidebar-collapsed") === "true";
+  });
+
+  const toggleCollapsed = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem("itsm-sidebar-collapsed", String(next));
+      return next;
+    });
+  };
 
   const currentWidth = collapsed ? DRAWER_WIDTH_COLLAPSED : DRAWER_WIDTH;
 
@@ -78,20 +91,58 @@ export function DashboardLayout({
     queryFn: () => fetch("/api/folders").then((r) => r.json()),
   });
 
+  const { data: readmeData } = useQuery<{ title: string }>({
+    queryKey: ["readme"],
+    queryFn: () => fetch("/api/readme").then((r) => r.json()),
+  });
+
+  const projectTitle = readmeData?.title || "ITSM";
+
   const drawerContent = (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <Toolbar sx={{ justifyContent: collapsed ? "center" : "space-between" }}>
         {!collapsed && (
-          <Typography variant="h6" noWrap sx={{ fontWeight: 700 }}>
-            ITSM
+          <Typography
+            variant="h6"
+            noWrap
+            sx={{ fontWeight: 700, cursor: "pointer" }}
+            onClick={onHome}
+          >
+            {projectTitle}
           </Typography>
         )}
-        <IconButton onClick={() => setCollapsed(!collapsed)} size="small">
+        <IconButton onClick={toggleCollapsed} size="small">
           {collapsed ? <MenuIcon /> : <ChevronLeft />}
         </IconButton>
       </Toolbar>
       <Divider />
       <List sx={{ flex: 1, overflow: "auto" }}>
+        <Tooltip title={collapsed ? "Home" : ""} placement="right">
+          <ListItemButton
+            selected={selectedFolder === null}
+            onClick={() => {
+              onHome();
+              setMobileOpen(false);
+            }}
+            sx={{
+              minHeight: 44,
+              justifyContent: collapsed ? "center" : "initial",
+              px: collapsed ? 1 : 2.5,
+            }}
+          >
+            <ListItemIcon
+              sx={{
+                minWidth: 0,
+                mr: collapsed ? 0 : 2,
+                justifyContent: "center",
+              }}
+            >
+              <Dashboard />
+            </ListItemIcon>
+            {!collapsed && <ListItemText primary="Home" />}
+          </ListItemButton>
+        </Tooltip>
+        <Divider sx={{ my: 0.5 }} />
         {folders?.map((folder) => (
           <Tooltip
             key={folder.id}

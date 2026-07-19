@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import type { FieldDef } from "@/shared/lib/config";
 import { getOptionColor, normalizeOptions } from "@/shared/lib/field-options";
+import { RelatedLinks } from "./RelatedLinks";
 
 interface EditableCellProps {
   value: string | undefined;
@@ -18,9 +19,10 @@ interface EditableCellProps {
   folderId: string;
   isActive: boolean;
   onSave: (fileId: string, fieldName: string, value: string) => void;
+  onNavigate?: (folderId: string, fileId: string) => void;
 }
 
-export function EditableCell({ value, field, isActive, fileId, onSave }: EditableCellProps) {
+export function EditableCell({ value, field, isActive, fileId, onSave, onNavigate }: EditableCellProps) {
   const [localValue, setLocalValue] = useState(value || "");
 
   // Sync external value changes
@@ -39,7 +41,11 @@ export function EditableCell({ value, field, isActive, fileId, onSave }: Editabl
           color={getOptionColor(field.options, value) || "default"}
         />
       ) : (
-        <span>{value}</span>
+        onNavigate ? (
+          <RelatedLinks value={value} onNavigate={onNavigate} />
+        ) : (
+          <span>{value}</span>
+        )
       )
     ) : (
       <span style={{ opacity: 0.3 }}>—</span>

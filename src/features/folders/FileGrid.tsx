@@ -30,11 +30,14 @@ import type { FolderDef } from "@/shared/lib/config";
 import { useColumnConfig } from "./useColumnConfig";
 import { ColumnConfigButton } from "./ColumnConfigButton";
 import { EditableCell } from "./EditableCell";
+import { CreateDialog } from "./CreateDialog";
 
 interface FileGridProps {
   folderId: string;
   selectedFile: string | null;
   onSelectFile: (id: string) => void;
+  onNavigate?: (folderId: string, fileId: string) => void;
+  onCreated?: (fileId: string) => void;
   searchFilter?: string;
 }
 
@@ -49,6 +52,8 @@ export function FileGrid({
   folderId,
   selectedFile,
   onSelectFile,
+  onNavigate,
+  onCreated,
   searchFilter = "",
 }: FileGridProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -132,6 +137,7 @@ export function FileGrid({
             folderId={folderId}
             isActive={info.row.original.id === selectedFile}
             onSave={handleCellSave}
+            onNavigate={onNavigate}
           />
         ),
       })
@@ -168,11 +174,25 @@ export function FileGrid({
 
   if (isLoading) return <Box sx={{ p: 2 }}>Loading...</Box>;
   if (!data?.files.length)
-    return <Box sx={{ p: 2 }}>No files in this folder</Box>;
+    return (
+      <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+        <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1, px: 1, py: 0.5 }}>
+          <CreateDialog folderId={folderId} onCreated={onCreated} />
+          <ColumnConfigButton
+            folderId={folderId}
+            allColumns={allColumnDefs}
+            columnConfig={columnConfig}
+            onConfigChange={updateColumnConfig}
+          />
+        </Box>
+        <Box sx={{ p: 2 }}>No files in this folder</Box>
+      </Box>
+    );
 
   return (
     <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
-      <Box sx={{ display: "flex", justifyContent: "flex-end", px: 1, pb: 1 }}>
+      <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1, px: 1, py: 0.5 }}>
+        <CreateDialog folderId={folderId} onCreated={onCreated} />
         <ColumnConfigButton
           folderId={folderId}
           allColumns={allColumnDefs}

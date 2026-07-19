@@ -24,6 +24,7 @@ import {
 import "@mdxeditor/editor/style.css";
 import "./editor-dark.css";
 import { useRef, useEffect } from "react";
+import { useThemeMode } from "@/shared/ui";
 
 interface MarkdownEditorProps {
   content: string;
@@ -32,6 +33,7 @@ interface MarkdownEditorProps {
 
 export default function MarkdownEditor({ content, onChange }: MarkdownEditorProps) {
   const editorRef = useRef<MDXEditorMethods>(null);
+  const { mode } = useThemeMode();
 
   useEffect(() => {
     if (editorRef.current) {
@@ -45,7 +47,7 @@ export default function MarkdownEditor({ content, onChange }: MarkdownEditorProp
       markdown={content}
       onChange={onChange}
       contentEditableClassName="mdx-editor-content"
-      className="mdx-editor-dark"
+      className={mode === "dark" ? "dark-theme" : ""}
       suppressHtmlProcessing={true}
       plugins={[
         headingsPlugin(),

@@ -32,7 +32,7 @@ function getInitialMode(): ThemeMode {
   if (typeof window === "undefined") return "dark";
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored === "light" || stored === "dark") return stored;
-  return "dark";
+  return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
 }
 
 export function AppThemeProvider({ children }: { children: ReactNode }) {
@@ -54,11 +54,6 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
       }),
     [mode]
   );
-
-  // Set initial data attribute
-  if (typeof window !== "undefined") {
-    document.documentElement.setAttribute("data-mui-color-scheme", mode);
-  }
 
   return (
     <ThemeContext value={{ mode, toggleTheme }}>

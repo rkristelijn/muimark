@@ -16,22 +16,22 @@ The app reads the folder tree, parses frontmatter as metadata, and presents ever
 ## How It Works
 
 ```text
-┌─────────────────────────────────────────────────────────────────┐
+┌──────────────────────────────────────────────────────────────────┐
 │ Sidebar          │  Grid (top)              │                    │
 │                  │  ┌────┬────────┬───────┐ │                    │
 │  📁 Incidents    │  │ ID │ Status │ Date  │ │                    │
 │  📁 Changes      │  ├────┼────────┼───────┤ │                    │
-│  📁 Problems     │  │ 12 │ Open   │ 07-19 │ │  ← selected       │
+│  📁 Problems     │  │ 12 │ Open   │ 07-19 │ │  ← selected        │
 │  📁 Runbooks     │  │ 11 │ Closed │ 07-18 │ │                    │
 │  📁 CMDB         │  └────┴────────┴───────┘ │                    │
 │                  │──────────────────────────│                    │
-│                  │  Editor (bottom)          │                    │
-│                  │                           │                    │
-│                  │  # I-012: Keyboard fix    │                    │
-│                  │                           │                    │
-│                  │  The 'N' key stopped...   │                    │
-│                  │                           │                    │
-└─────────────────────────────────────────────────────────────────┘
+│                  │  Editor (bottom)         │                    │
+│                  │                          │                    │
+│                  │  # I-012: Keyboard fix   │                    │
+│                  │                          │                    │
+│                  │  The 'N' key stopped...  │                    │
+│                  │                          │                    │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
 ### Layout

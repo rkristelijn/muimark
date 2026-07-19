@@ -11,13 +11,25 @@ export const metadata: Metadata = {
   description: "Markdown-backed IT Service Management",
 };
 
+// Inline script to set theme before React hydrates (prevents flash)
+const themeScript = `
+  (function() {
+    var stored = localStorage.getItem('itsm-theme-mode');
+    var mode = stored || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    document.documentElement.setAttribute('data-mui-color-scheme', mode);
+  })();
+`;
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" data-mui-color-scheme="dark">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body>
         <Providers>{children}</Providers>
       </body>
