@@ -130,6 +130,7 @@ export function FileGrid({
             field={field}
             fileId={info.row.original.id}
             folderId={folderId}
+            isActive={info.row.original.id === selectedFile}
             onSave={handleCellSave}
           />
         ),

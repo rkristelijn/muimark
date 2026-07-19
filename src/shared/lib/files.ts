@@ -297,7 +297,9 @@ export function createFile(
         frontmatter[field.name] = new Date().toISOString().slice(0, 10);
       } else if (field.type === "select") {
         const defaultOption = field.options?.[0];
-        if (defaultOption) frontmatter[field.name] = defaultOption;
+        if (defaultOption) {
+          frontmatter[field.name] = typeof defaultOption === "string" ? defaultOption : defaultOption.value;
+        }
       }
     }
   }

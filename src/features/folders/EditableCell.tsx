@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Chip,
   MenuItem,
@@ -9,95 +9,90 @@ import {
   type SelectChangeEvent,
 } from "@mui/material";
 import type { FieldDef } from "@/shared/lib/config";
+import { getOptionColor, normalizeOptions } from "@/shared/lib/field-options";
 
 interface EditableCellProps {
   value: string | undefined;
   field: FieldDef;
   fileId: string;
   folderId: string;
+  isActive: boolean;
   onSave: (fileId: string, fieldName: string, value: string) => void;
 }
 
-export function EditableCell({ value, field, fileId, folderId, onSave }: EditableCellProps) {
-  const [editing, setEditing] = useState(false);
+export function EditableCell({ value, field, isActive, fileId, onSave }: EditableCellProps) {
   const [localValue, setLocalValue] = useState(value || "");
 
-  if (!editing) {
-    return (
-      <span
-        onDoubleClick={(e) => {
-          e.stopPropagation();
-          setEditing(true);
-        }}
-        style={{ cursor: "pointer", minWidth: 40, display: "inline-block" }}
-      >
-        {value ? (
-          field.type === "select" ? (
-            <Chip label={value} size="small" variant="outlined" />
-          ) : (
-            <span>{value}</span>
-          )
-        ) : (
-          <span style={{ opacity: 0.3 }}>—</span>
-        )}
-      </span>
+  // Sync external value changes
+  useEffect(() => {
+    setLocalValue(value || "");
+  }, [value]);
+
+  // Read-only mode
+  if (!isActive) {
+    return value ? (
+      field.type === "select" ? (
+        <Chip
+          label={value}
+          size="small"
+          variant="outlined"
+          color={getOptionColor(field.options, value) || "default"}
+        />
+      ) : (
+        <span>{value}</span>
+      )
+    ) : (
+      <span style={{ opacity: 0.3 }}>—</span>
     );
   }
 
+  // Edit mode — select
   if (field.type === "select" && field.options) {
+    const opts = normalizeOptions(field.options);
     return (
       <Select
         size="small"
         value={localValue}
-        autoFocus
-        open
         onChange={(e: SelectChangeEvent) => {
           const newVal = e.target.value;
           setLocalValue(newVal);
-          setEditing(false);
           onSave(fileId, field.name, newVal);
         }}
-        onClose={() => setEditing(false)}
         onClick={(e) => e.stopPropagation()}
         sx={{ minWidth: 100 }}
+        variant="standard"
       >
-        {field.options.map((opt) => (
-          <MenuItem key={opt} value={opt}>
-            {opt}
+        {opts.map((opt) => (
+          <MenuItem key={opt.value} value={opt.value}>
+            {opt.value}
           </MenuItem>
         ))}
       </Select>
     );
   }
 
-  // Text or date input
+  // Edit mode — text/date
   return (
     <TextField
       size="small"
       type={field.type === "date" ? "date" : "text"}
       value={localValue}
-      autoFocus
       onChange={(e) => setLocalValue(e.target.value)}
       onBlur={() => {
-        setEditing(false);
         if (localValue !== (value || "")) {
           onSave(fileId, field.name, localValue);
         }
       }}
       onKeyDown={(e) => {
         if (e.key === "Enter") {
-          setEditing(false);
           if (localValue !== (value || "")) {
             onSave(fileId, field.name, localValue);
           }
         }
-        if (e.key === "Escape") {
-          setLocalValue(value || "");
-          setEditing(false);
-        }
       }}
       onClick={(e) => e.stopPropagation()}
-      sx={{ minWidth: 100 }}
+      variant="standard"
+      sx={{ minWidth: 80 }}
     />
   );
 }

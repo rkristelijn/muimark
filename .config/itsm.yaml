@@ -4,24 +4,24 @@ folders:
     label: Incidents
     path: incidents
     icon: warning
-    idPattern: "^(I-\\d+)"
+    idPattern: ^(I-\d+)
     fields:
       - name: status
         label: Status
         type: select
         options:
-          - Investigating
-          - Identified
-          - Resolved
-          - Closed
+          - { value: Investigating, color: warning }
+          - { value: Identified, color: info }
+          - { value: Resolved, color: success }
+          - { value: Closed, color: success }
       - name: severity
         label: Severity
         type: select
         options:
-          - Critical
-          - High
-          - Medium
-          - Low
+          - { value: Critical, color: error }
+          - { value: High, color: warning }
+          - { value: Medium, color: info }
+          - { value: Low, color: success }
       - name: date
         label: Date
         type: date
@@ -40,16 +40,16 @@ folders:
     label: Problems
     path: problems
     icon: bug_report
-    idPattern: "^(P-\\d+)"
+    idPattern: ^(P-\d+)
     fields:
       - name: status
         label: Status
         type: select
         options:
-          - Identified
-          - Investigating
-          - Known Error
-          - Resolved
+          - { value: Identified, color: info }
+          - { value: Investigating, color: warning }
+          - { value: Known Error, color: error }
+          - { value: Resolved, color: success }
       - name: created
         label: Created
         type: date
@@ -63,28 +63,28 @@ folders:
     label: Changes
     path: changes
     icon: build
-    idPattern: "^(SC-\\d+)"
+    idPattern: ^(SC-\d+)
     fields:
       - name: status
         label: Status
         type: select
         options:
-          - Proposed
-          - Planned
-          - Implementing
-          - Validating
-          - Closed
-          - Rolled Back
+          - { value: Proposed, color: default }
+          - { value: Planned, color: info }
+          - { value: Implementing, color: warning }
+          - { value: Validating, color: info }
+          - { value: Closed, color: success }
+          - { value: Rolled Back, color: error }
         aliases:
           - status
       - name: priority
         label: Priority
         type: select
         options:
-          - Critical
-          - High
-          - Medium
-          - Low
+          - { value: Critical, color: error }
+          - { value: High, color: warning }
+          - { value: Medium, color: info }
+          - { value: Low, color: success }
       - name: created
         label: Created
         type: date
@@ -100,17 +100,17 @@ folders:
     label: Requests
     path: docs/research
     icon: science
-    idPattern: "^(R-\\d+)"
+    idPattern: ^(R-\d+)
     fields:
       - name: status
         label: Status
         type: select
         options:
-          - Requested
-          - Researching
-          - Approved
-          - Rejected
-          - Delivered
+          - { value: Requested, color: default }
+          - { value: Researching, color: info }
+          - { value: Approved, color: success }
+          - { value: Rejected, color: error }
+          - { value: Delivered, color: success }
       - name: created
         label: Created
         type: date
@@ -121,30 +121,30 @@ folders:
     label: Runbooks
     path: docs/runbooks
     icon: menu_book
-    idPattern: "^(RB-\\d+)"
+    idPattern: ^(RB-\d+)
     fields:
       - name: status
         label: Status
         type: select
         options:
-          - Draft
-          - Active
-          - Deprecated
+          - { value: Draft, color: default }
+          - { value: Active, color: success }
+          - { value: Deprecated, color: warning }
   - id: adrs
     label: Decisions (ADR)
     path: docs/adr
     icon: architecture
-    idPattern: "^(ADR-\\d+)"
+    idPattern: ^(ADR-\d+)
     fields:
       - name: status
         label: Status
         type: select
         options:
-          - Proposed
-          - Accepted
-          - Deprecated
-          - Superseded
-          - Rejected
+          - { value: Proposed, color: default }
+          - { value: Accepted, color: success }
+          - { value: Deprecated, color: warning }
+          - { value: Superseded, color: info }
+          - { value: Rejected, color: error }
       - name: date
         label: Date
         type: date
@@ -152,7 +152,7 @@ folders:
         label: Supersedes
         type: text
   - id: cmdb-hosts
-    label: 'CMDB: Hosts'
+    label: "CMDB: Hosts"
     path: cmdb/hosts
     icon: dns
     fields:
@@ -160,9 +160,9 @@ folders:
         label: Status
         type: select
         options:
-          - Active
-          - Maintenance
-          - Decommissioned
+          - { value: Active, color: success }
+          - { value: Maintenance, color: warning }
+          - { value: Decommissioned, color: error }
       - name: type
         label: Type
         type: select
@@ -184,7 +184,7 @@ folders:
         label: Location
         type: text
   - id: cmdb-services
-    label: 'CMDB: Services'
+    label: "CMDB: Services"
     path: cmdb/services
     icon: cloud
     fields:
@@ -192,10 +192,10 @@ folders:
         label: Status
         type: select
         options:
-          - Active
-          - Degraded
-          - Down
-          - Planned
+          - { value: Active, color: success }
+          - { value: Degraded, color: warning }
+          - { value: Down, color: error }
+          - { value: Planned, color: info }
       - name: host
         label: Host
         type: text
@@ -208,21 +208,3 @@ folders:
       - name: depends_on
         label: Depends On
         type: text
-columnConfig:
-  cmdb-hosts:
-    - field: id
-      visible: true
-    - field: title
-      visible: true
-    - field: status
-      visible: true
-    - field: type
-      visible: true
-    - field: ip
-      visible: true
-    - field: os
-      visible: true
-    - field: ram
-      visible: true
-    - field: location
-      visible: true

@@ -2,11 +2,16 @@ import fs from "fs";
 import path from "path";
 import * as yaml from "js-yaml";
 
+import type { FieldOption } from "./field-options";
+
+export type { FieldOption } from "./field-options";
+export { normalizeOptions, getOptionColor } from "./field-options";
+
 export interface FieldDef {
   name: string;
   label: string;
   type: "text" | "date" | "select";
-  options?: string[];
+  options?: (string | FieldOption)[];
   aliases?: string[];
 }
 
