@@ -28,7 +28,7 @@ let cachedConfig: Config | null = null;
 export function getConfig(): Config {
   if (cachedConfig) return cachedConfig;
 
-  const configPath = path.join(process.cwd(), "itsm.config.yaml");
+  const configPath = path.join(process.cwd(), ".config", "itsm.yaml");
   const raw = fs.readFileSync(configPath, "utf-8");
   cachedConfig = yaml.load(raw) as Config;
   return cachedConfig;
