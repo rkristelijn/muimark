@@ -15,6 +15,7 @@ export interface FolderDef {
   label: string;
   path: string;
   icon: string;
+  idPattern?: string;
   fields: FieldDef[];
 }
 

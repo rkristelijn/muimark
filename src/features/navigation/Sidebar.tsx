@@ -9,7 +9,6 @@ import {
   ListItemText,
   Toolbar,
   Typography,
-  Box,
 } from "@mui/material";
 import {
   Warning,

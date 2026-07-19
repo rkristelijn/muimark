@@ -94,11 +94,34 @@ export function listFiles(folderId: string): FileEntry[] {
     const titleMatch = content.match(/^#\s+(.+)$/m);
     let title = (frontmatter.title as string) || titleMatch?.[1] || filename.replace(".md", "");
 
-    // Strip ID prefix from title if present (e.g. "I-001: Title" → "Title")
-    const id = filename.replace(".md", "");
-    const idPrefix = `${id}: `;
-    if (title.startsWith(idPrefix)) {
-      title = title.slice(idPrefix.length);
+    // Extract ID using idPattern regex, or fall back to filename
+    const basename = filename.replace(".md", "");
+    let id = basename;
+    if (folder.idPattern) {
+      const idRegex = new RegExp(folder.idPattern);
+      const idMatch = basename.match(idRegex);
+      if (idMatch?.[1]) {
+        id = idMatch[1];
+        // Strip ID and common separators from title
+        const separators = [`${id}: `, `${id} - `, `${id}-`, `${id} `];
+        for (const sep of separators) {
+          if (title.startsWith(sep)) {
+            title = title.slice(sep.length);
+            break;
+          }
+        }
+        // Also strip from filename-derived title
+        if (title === basename) {
+          const rest = basename.slice(id.length).replace(/^[-_ ]+/, "");
+          if (rest) title = rest.replace(/[-_]/g, " ");
+        }
+      }
+    } else {
+      // Legacy: strip ID prefix from title if present (e.g. "I-001: Title" → "Title")
+      const idPrefix = `${id}: `;
+      if (title.startsWith(idPrefix)) {
+        title = title.slice(idPrefix.length);
+      }
     }
 
     return {
