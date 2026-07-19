@@ -2,10 +2,10 @@
 
 import { Box } from "@mui/material";
 import { useState } from "react";
-import { Sidebar } from "@/components/Sidebar";
-import { FileGrid } from "@/components/FileGrid";
-import { DetailPanel } from "@/components/DetailPanel";
-import { CreateDialog } from "@/components/CreateDialog";
+import { Sidebar } from "@/features/navigation";
+import { FileGrid } from "@/features/folders";
+import { DetailPanel } from "@/features/editor";
+import { CreateDialog } from "@/features/folders";
 
 export default function Home() {
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);

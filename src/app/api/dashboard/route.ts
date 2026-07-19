@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { listFiles } from "@/lib/files";
-import type { FileEntry } from "@/lib/files";
+import { listFiles } from "@/shared/lib/files";
+import type { FileEntry } from "@/shared/lib/files";
 
 interface DashboardMetrics {
   timestamp: string;

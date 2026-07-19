@@ -28,8 +28,8 @@ import {
   Refresh,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
-import { KpiCard } from "@/components/KpiCard";
-import type { DashboardMetrics } from "@/lib/types";
+import { KpiCard } from "@/features/dashboard";
+import type { DashboardMetrics } from "@/shared/lib/types";
 
 function StatusChip({ status }: { status: string }) {
   let color: "default" | "success" | "warning" | "error" | "info" = "default";

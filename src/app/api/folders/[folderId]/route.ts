@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { listFiles, createFile } from "@/lib/files";
-import { getFolderDef } from "@/lib/config";
+import { listFiles, createFile } from "@/shared/lib/files";
+import { getFolderDef } from "@/shared/lib/config";
 
 export async function GET(
   _request: Request,

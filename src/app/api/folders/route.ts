@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { listFolders } from "@/lib/files";
+import { listFolders } from "@/shared/lib/files";
 
 export async function GET() {
   try {

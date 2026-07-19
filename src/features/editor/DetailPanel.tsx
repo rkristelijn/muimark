@@ -5,7 +5,7 @@ import { Box, Button, CircularProgress, Typography } from "@mui/material";
 import { Save } from "@mui/icons-material";
 import { useState, useCallback } from "react";
 import dynamic from "next/dynamic";
-import type { FileDetail } from "@/lib/files";
+import type { FileDetail } from "@/shared/lib/files";
 
 // MDXEditor must be loaded client-side only
 const MarkdownEditor = dynamic(() => import("./MarkdownEditor"), { ssr: false });

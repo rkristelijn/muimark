@@ -24,8 +24,8 @@ import {
   Typography,
 } from "@mui/material";
 import { useState, useMemo } from "react";
-import type { FileEntry } from "@/lib/files";
-import type { FolderDef } from "@/lib/config";
+import type { FileEntry } from "@/shared/lib/files";
+import type { FolderDef } from "@/shared/lib/config";
 
 interface FileGridProps {
   folderId: string;

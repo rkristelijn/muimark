@@ -21,7 +21,7 @@ import {
   Dns,
   Cloud,
 } from "@mui/icons-material";
-import type { FolderDef } from "@/lib/config";
+import type { FolderDef } from "@/shared/lib/config";
 
 const DRAWER_WIDTH = 240;
 
