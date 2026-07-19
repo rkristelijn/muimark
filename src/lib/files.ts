@@ -174,3 +174,77 @@ export function saveFile(
 export function listFolders(): FolderDef[] {
   return getConfig().folders;
 }
+
+/**
+ * Generate the next ID for a folder based on existing files.
+ * Pattern: prefix-NNN (e.g., I-001, C-012, P-003)
+ */
+export function getNextId(folderId: string): string {
+  const folder = getFolderDef(folderId);
+  if (!folder) throw new Error(`Unknown folder: ${folderId}`);
+
+  const prefix = folderId.charAt(0).toUpperCase();
+  const dirPath = getAbsolutePath(folder.path);
+
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+    return `${prefix}-001`;
+  }
+
+  const files = fs.readdirSync(dirPath).filter((f) => f.endsWith(".md"));
+  const numbers = files
+    .map((f) => f.replace(".md", ""))
+    .map((f) => {
+      const match = f.match(/(\d+)/);
+      return match?.[1] ? parseInt(match[1], 10) : 0;
+    })
+    .filter((n) => !isNaN(n));
+
+  const max = numbers.length > 0 ? Math.max(...numbers) : 0;
+  const next = String(max + 1).padStart(3, "0");
+  return `${prefix}-${next}`;
+}
+
+/**
+ * Create a new file in the given folder with auto-generated ID.
+ * Returns the created file's ID.
+ */
+export function createFile(
+  folderId: string,
+  title: string,
+  initialFields?: Record<string, string>
+): string {
+  const folder = getFolderDef(folderId);
+  if (!folder) throw new Error(`Unknown folder: ${folderId}`);
+
+  const id = getNextId(folderId);
+  const dirPath = getAbsolutePath(folder.path);
+  const filename = `${id}.md`;
+  const filePath = path.join(dirPath, filename);
+
+  // Build frontmatter from folder field definitions
+  const frontmatter: Record<string, string> = {};
+  if (folder.fields) {
+    for (const field of folder.fields) {
+      const fieldValue = initialFields?.[field.name];
+      if (fieldValue) {
+        frontmatter[field.name] = fieldValue;
+      } else if (field.type === "date" && field.name.match(/date|created/)) {
+        frontmatter[field.name] = new Date().toISOString().slice(0, 10);
+      } else if (field.type === "select") {
+        const defaultOption = field.options?.[0];
+        if (defaultOption) frontmatter[field.name] = defaultOption;
+      }
+    }
+  }
+
+  // Build markdown content
+  const fm = Object.entries(frontmatter)
+    .map(([k, v]) => `${k}: ${v}`)
+    .join("\n");
+
+  const content = `---\n${fm}\n---\n\n# ${id}: ${title}\n\n`;
+
+  fs.writeFileSync(filePath, content, "utf-8");
+  return id;
+}

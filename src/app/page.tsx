@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { FileGrid } from "@/components/FileGrid";
 import { DetailPanel } from "@/components/DetailPanel";
+import { CreateDialog } from "@/components/CreateDialog";
 
 export default function Home() {
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
@@ -23,6 +24,9 @@ export default function Home() {
         {selectedFolder && (
           <>
             <Box sx={{ flex: 1, overflow: "auto", minHeight: 0 }}>
+              <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
+                <CreateDialog folderId={selectedFolder} />
+              </Box>
               <FileGrid
                 folderId={selectedFolder}
                 selectedFile={selectedFile}

@@ -11,5 +11,8 @@ build = "npm"
 file-lines = 300
 files-per-dir = 15
 
+[exclude]
+paths = [".next", "node_modules", "dist", "build", "coverage"]
+
 [checks]
 check-dutch = true
