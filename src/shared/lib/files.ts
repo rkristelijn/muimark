@@ -21,6 +21,12 @@ export interface FileEntry {
   filename: string;
   title: string;
   frontmatter: Record<string, unknown>;
+  git?: {
+    createdAt: string | null;
+    createdBy: string | null;
+    updatedAt: string | null;
+    updatedBy: string | null;
+  };
 }
 
 export interface FileDetail extends FileEntry {

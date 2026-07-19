@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { listFiles, createFile } from "@/shared/lib/files";
 import { getFolderDef } from "@/shared/lib/config";
+import { getGitMetaBatch } from "@/shared/lib/git-meta";
 
 export async function GET(
   _request: Request,
@@ -14,7 +15,17 @@ export async function GET(
     }
 
     const files = listFiles(folderId);
-    return NextResponse.json({ folder, files });
+
+    // Batch fetch git metadata
+    const filenames = files.map((f) => f.filename);
+    const gitMeta = getGitMetaBatch(folder.path, filenames);
+
+    const filesWithGit = files.map((f) => ({
+      ...f,
+      git: gitMeta[f.filename] || null,
+    }));
+
+    return NextResponse.json({ folder, files: filesWithGit });
   } catch {
     return NextResponse.json({ error: "Failed to load folder" }, { status: 500 });
   }

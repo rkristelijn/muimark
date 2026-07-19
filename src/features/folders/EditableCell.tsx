@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Chip,
   MenuItem,
@@ -24,11 +24,16 @@ interface EditableCellProps {
 
 export function EditableCell({ value, field, isActive, fileId, onSave, onNavigate }: EditableCellProps) {
   const [localValue, setLocalValue] = useState(value || "");
+  const [wasActive, setWasActive] = useState(false);
 
-  // Sync external value changes
-  useEffect(() => {
+  // Reset local value when becoming active (entering edit mode)
+  if (isActive && !wasActive) {
     setLocalValue(value || "");
-  }, [value]);
+    setWasActive(true);
+  }
+  if (!isActive && wasActive) {
+    setWasActive(false);
+  }
 
   // Read-only mode
   if (!isActive) {
@@ -65,11 +70,12 @@ export function EditableCell({ value, field, isActive, fileId, onSave, onNavigat
           onSave(fileId, field.name, newVal);
         }}
         onClick={(e) => e.stopPropagation()}
-        sx={{ minWidth: 100 }}
         variant="standard"
+        sx={{ minWidth: 80, fontSize: "0.8125rem" }}
+        disableUnderline
       >
         {opts.map((opt) => (
-          <MenuItem key={opt.value} value={opt.value}>
+          <MenuItem key={opt.value} value={opt.value} dense>
             {opt.value}
           </MenuItem>
         ))}
@@ -98,7 +104,8 @@ export function EditableCell({ value, field, isActive, fileId, onSave, onNavigat
       }}
       onClick={(e) => e.stopPropagation()}
       variant="standard"
-      sx={{ minWidth: 80 }}
+      sx={{ minWidth: 80, fontSize: "0.8125rem" }}
+      slotProps={{ input: { disableUnderline: true } }}
     />
   );
 }

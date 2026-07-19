@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getFile, saveFile } from "@/shared/lib/files";
-import { getFolderDef } from "@/shared/lib/config";
+import { getFolderDef, getAbsolutePath } from "@/shared/lib/config";
+import { indexRelations } from "@/shared/lib/relations";
+import path from "path";
 
 export async function GET(
   _request: Request,
@@ -37,6 +39,22 @@ export async function PUT(
     }
 
     saveFile(folderId, fileId, frontmatter || {}, content);
+
+    // Index relations: scan for #ID references and update targets
+    if (folder.idPattern) {
+      const idRegex = new RegExp(folder.idPattern, "i");
+      const idMatch = fileId.match(idRegex);
+      const displayId = idMatch?.[1]?.toUpperCase();
+      if (displayId) {
+        const filePath = path.join(getAbsolutePath(folder.path), `${fileId}.md`);
+        try {
+          indexRelations(displayId, content, filePath);
+        } catch {
+          // Non-critical: don't fail the save if indexing fails
+        }
+      }
+    }
+
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ error: "Failed to save file" }, { status: 500 });

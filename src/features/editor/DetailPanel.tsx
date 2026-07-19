@@ -2,7 +2,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Box, CircularProgress, Typography, Chip } from "@mui/material";
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
 import type { FileDetail } from "@/shared/lib/files";
 
@@ -12,9 +12,10 @@ const MarkdownEditor = dynamic(() => import("./MarkdownEditor"), { ssr: false })
 interface DetailPanelProps {
   folderId: string;
   fileId: string;
+  onNavigate?: (displayId: string) => void;
 }
 
-export function DetailPanel({ folderId, fileId }: DetailPanelProps) {
+export function DetailPanel({ folderId, fileId, onNavigate }: DetailPanelProps) {
   const queryClient = useQueryClient();
   const [editedContent, setEditedContent] = useState<string>("");
   const [isDirty, setIsDirty] = useState(false);
@@ -32,14 +33,16 @@ export function DetailPanel({ folderId, fileId }: DetailPanelProps) {
   // Initialize content from server (only once per mount)
   if (file?.content && !initialized) {
     setEditedContent(file.content);
-    contentRef.current = file.content;
-    fileRef.current = file;
     setInitialized(true);
   }
 
-  if (file && fileRef.current !== file) {
-    fileRef.current = file;
-  }
+  useEffect(() => {
+    contentRef.current = editedContent;
+  }, [editedContent]);
+
+  useEffect(() => {
+    if (file) fileRef.current = file;
+  }, [file]);
 
   const doSave = useCallback(async () => {
     const content = contentRef.current;
@@ -143,7 +146,7 @@ export function DetailPanel({ folderId, fileId }: DetailPanelProps) {
         />
       </Box>
       <Box sx={{ flex: 1, overflow: "auto", p: 1 }} onBlur={saveNow}>
-        <MarkdownEditor content={editedContent} onChange={handleChange} />
+        <MarkdownEditor content={editedContent} onChange={handleChange} onNavigate={onNavigate} />
       </Box>
     </Box>
   );

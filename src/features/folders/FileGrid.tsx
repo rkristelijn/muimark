@@ -31,13 +31,14 @@ import { useColumnConfig } from "./useColumnConfig";
 import { ColumnConfigButton } from "./ColumnConfigButton";
 import { EditableCell } from "./EditableCell";
 import { CreateDialog } from "./CreateDialog";
+import { RelatedLinks } from "./RelatedLinks";
 
 interface FileGridProps {
   folderId: string;
   selectedFile: string | null;
-  onSelectFile: (id: string) => void;
+  onSelectFile: (id: string, displayId?: string) => void;
   onNavigate?: (folderId: string, fileId: string) => void;
-  onCreated?: (fileId: string) => void;
+  onCreated?: (fileId: string, displayId?: string) => void;
   searchFilter?: string;
 }
 
@@ -64,6 +65,8 @@ export function FileGrid({
     queryKey: ["folder", folderId],
     queryFn: () => fetch(`/api/folders/${folderId}`).then((r) => r.json()),
   });
+
+  // Auto-select is handled by the parent (page.tsx)
 
   const queryClient = useQueryClient();
 
@@ -96,7 +99,11 @@ export function FileGrid({
 
   // Sync column config from server into TanStack Table state
   useEffect(() => {
-    if (columnConfig.length === 0) return;
+    if (columnConfig.length === 0) {
+      // Default: hide git and relations columns
+      setColumnVisibility({ _relations: false, _updatedAt: false, _updatedBy: false });
+      return;
+    }
 
     const order = columnConfig.map((c) => c.field);
     const visibility: VisibilityState = {};
@@ -143,7 +150,38 @@ export function FileGrid({
       })
     );
 
-    return [...baseCols, ...fieldCols];
+    // Git metadata columns (hidden by default)
+    const gitCols = [
+      columnHelper.accessor((row) => (row.frontmatter.relations as string[] || []).join(", "), {
+        id: "_relations",
+        header: "Relations",
+        cell: (info) => {
+          const val = info.getValue();
+          if (!val) return null;
+          return onNavigate ? (
+            <RelatedLinks value={val} onNavigate={onNavigate} />
+          ) : (
+            <span>{val}</span>
+          );
+        },
+      }),
+      columnHelper.accessor((row) => row.git?.updatedAt as string, {
+        id: "_updatedAt",
+        header: "Updated",
+        cell: (info) => {
+          const val = info.getValue();
+          if (!val) return null;
+          return <span>{new Date(val).toLocaleDateString("nl-NL")}</span>;
+        },
+      }),
+      columnHelper.accessor((row) => row.git?.updatedBy as string, {
+        id: "_updatedBy",
+        header: "Updated By",
+        cell: (info) => info.getValue() || null,
+      }),
+    ];
+
+    return [...baseCols, ...fieldCols, ...gitCols];
   })();
 
   const table = useReactTable({
@@ -234,7 +272,7 @@ export function FileGrid({
                 key={row.id}
                 hover
                 selected={row.original.id === selectedFile}
-                onClick={() => onSelectFile(row.original.id)}
+                onClick={() => onSelectFile(row.original.id, row.original.displayId)}
                 sx={{ cursor: "pointer" }}
               >
                 {row.getVisibleCells().map((cell) => (

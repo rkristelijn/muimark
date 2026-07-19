@@ -33,7 +33,6 @@ export function RelatedLinks({ value, onNavigate }: RelatedLinksProps) {
 
   // Find all ID references in the value
   const parts: { text: string; isLink: boolean; folderId?: string; fileId?: string }[] = [];
-  let remaining = value;
 
   // Combine all patterns into one regex to find matches
   const allPatterns = folders

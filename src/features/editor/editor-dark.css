@@ -14,24 +14,94 @@
   z-index: 1;
 }
 
-/* Dark mode toolbar adjustments */
-.dark-theme [class*="toolbar"] {
+/* Dark mode toolbar adjustments — via class or html attribute */
+.dark-theme [class*="toolbar"],
+html[data-mui-color-scheme="dark"] .dark-editor [class*="toolbar"] {
   background: #1e1e1e !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
 }
 
 .dark-theme [class*="toolbar"] button,
 .dark-theme [class*="toolbar"] select,
-.dark-theme [class*="toolbar"] svg {
+.dark-theme [class*="toolbar"] svg,
+html[data-mui-color-scheme="dark"] .dark-editor [class*="toolbar"] button,
+html[data-mui-color-scheme="dark"] .dark-editor [class*="toolbar"] select,
+html[data-mui-color-scheme="dark"] .dark-editor [class*="toolbar"] svg {
   color: #e0e0e0 !important;
   fill: #e0e0e0 !important;
 }
 
-.dark-theme [class*="toolbar"] button:hover {
+.dark-theme [class*="toolbar"] button:hover,
+html[data-mui-color-scheme="dark"] .dark-editor [class*="toolbar"] button:hover {
   background: rgba(255, 255, 255, 0.1) !important;
 }
 
-.dark-theme [class*="toolbar"] select {
+.dark-theme [class*="toolbar"] select,
+html[data-mui-color-scheme="dark"] .dark-editor [class*="toolbar"] select {
   background: transparent;
   border-color: rgba(255, 255, 255, 0.3);
 }
+
+/* Dark mode content fallback via html attribute */
+html[data-mui-color-scheme="dark"] .mdx-editor-content {
+  color: #e0e0e0;
+}
+
+/* Dark mode: dropdowns/popups in toolbar */
+.dark-theme [class*="selectTrigger"],
+.dark-theme [class*="Select"] {
+  background: transparent !important;
+  color: #e0e0e0 !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.dark-theme [class*="selectContent"],
+.dark-theme [role="listbox"],
+.dark-theme [data-radix-popper-content-wrapper] [class*="Content"] {
+  background: #2d2d2d !important;
+  color: #e0e0e0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+.dark-theme [class*="selectItem"],
+.dark-theme [role="option"] {
+  color: #e0e0e0 !important;
+}
+
+.dark-theme [class*="selectItem"]:hover,
+.dark-theme [role="option"]:hover,
+.dark-theme [class*="selectItem"][data-highlighted] {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Dark mode: code blocks and inline code */
+.dark-theme pre,
+.dark-theme [class*="codeBlock"],
+.dark-theme .cm-editor {
+  background: #1a1a2e !important;
+  color: #e0e0e0 !important;
+  border-radius: 4px;
+}
+
+.dark-theme code {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #e0e0e0 !important;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.dark-theme .cm-gutters {
+  background: #1a1a2e !important;
+  color: #666 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark-theme .cm-activeLine {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.dark-theme .cm-selectionBackground {
+  background: rgba(100, 150, 255, 0.2) !important;
+}
+
+/* Relation links (#ID patterns) styling — handled via JS click handler */
