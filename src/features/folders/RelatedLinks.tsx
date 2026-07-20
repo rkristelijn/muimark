@@ -16,10 +16,11 @@ interface FolderPatternMap {
 
 export function RelatedLinks({ value, onNavigate }: RelatedLinksProps) {
   // Load folder definitions to get idPatterns
-  const { data: folders } = useQuery<FolderDef[]>({
+  const { data: foldersData } = useQuery<{ folders: FolderDef[] }>({
     queryKey: ["folders"],
     queryFn: () => fetch("/api/folders").then((r) => r.json()),
   });
+  const folders = foldersData?.folders;
 
   if (!folders || !value) return <span>{value}</span>;
 

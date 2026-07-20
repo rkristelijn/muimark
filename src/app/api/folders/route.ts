@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
-import { listFolders } from "@/shared/lib/files";
+import { listFolders, getTree } from "@/shared/lib";
 
 export async function GET() {
   try {
     const folders = listFolders();
-    return NextResponse.json(folders);
-  } catch {
-    return NextResponse.json({ error: "Failed to list folders" }, { status: 500 });
+    const tree = getTree();
+    return NextResponse.json({ folders, tree });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to list folders";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -74,7 +74,8 @@ function extractInlineMetadata(content: string): Record<string, string> {
 }
 
 /**
- * List all markdown files in a folder with their frontmatter
+ * List all markdown files in a folder with their frontmatter.
+ * folderId can be an encoded id (e.g. "mental-health--burnout") or a direct path.
  */
 export function listFiles(folderId: string): FileEntry[] {
   const folder = getFolderDef(folderId);
@@ -83,9 +84,12 @@ export function listFiles(folderId: string): FileEntry[] {
   const dirPath = getAbsolutePath(folder.path);
   if (!fs.existsSync(dirPath)) return [];
 
-  let files = fs.readdirSync(dirPath).filter((f) => f.endsWith(".md"));
+  let files = fs.readdirSync(dirPath).filter((f) => {
+    const fullPath = path.join(dirPath, f);
+    return fs.statSync(fullPath).isFile() && f.endsWith(".md");
+  });
 
-  // Auto-repair: rename files without ID prefix
+  // Auto-repair: rename files without ID prefix (only if folder has idPattern)
   if (folder.idPattern) {
     const idRegex = new RegExp(folder.idPattern, "i");
     const needsRepair = files.filter((f) => !idRegex.test(f.replace(".md", "")));
@@ -113,7 +117,10 @@ export function listFiles(folderId: string): FileEntry[] {
       }
 
       // Re-read directory after renames
-      files = fs.readdirSync(dirPath).filter((f) => f.endsWith(".md"));
+      files = fs.readdirSync(dirPath).filter((f) => {
+        const fullPath = path.join(dirPath, f);
+        return fs.statSync(fullPath).isFile() && f.endsWith(".md");
+      });
     }
   }
 
@@ -239,7 +246,7 @@ export function saveFile(
 }
 
 /**
- * List all configured folders
+ * List all configured/discovered folders
  */
 export function listFolders(): FolderDef[] {
   return getConfig().folders;
@@ -315,7 +322,9 @@ export function createFile(
     .map(([k, v]) => `${k}: ${v}`)
     .join("\n");
 
-  const content = `---\n${fm}\n---\n\n# ${id}: ${title}\n\n`;
+  const content = fm
+    ? `---\n${fm}\n---\n\n# ${id}: ${title}\n\n`
+    : `# ${title}\n\n`;
 
   fs.writeFileSync(filePath, content, "utf-8");
   return id;

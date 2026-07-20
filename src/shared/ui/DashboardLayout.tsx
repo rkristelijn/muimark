@@ -4,6 +4,7 @@ import { useState, useEffect, type ReactNode } from "react";
 import {
   AppBar,
   Box,
+  Collapse,
   Drawer,
   IconButton,
   InputBase,
@@ -20,37 +21,26 @@ import {
 import {
   ChevronLeft,
   DarkMode,
+  ExpandLess,
+  ExpandMore,
+  Folder,
+  FolderOpen,
   LightMode,
   Menu as MenuIcon,
   Search as SearchIcon,
-  Warning,
-  Build,
-  BugReport,
-  Science,
-  MenuBook,
-  Architecture,
-  Dns,
-  Cloud,
   Dashboard,
+  Description,
 } from "@mui/icons-material";
 import { useQuery } from "@tanstack/react-query";
 import { useThemeMode } from "./ThemeContext";
-import type { FolderDef } from "@/shared/lib/config";
+import type { TreeNode } from "@/shared/lib/config";
 
-const DRAWER_WIDTH = 240;
+const DRAWER_WIDTH = 260;
 const DRAWER_WIDTH_COLLAPSED = 56;
 
-const iconMap: Record<string, React.ReactNode> = {
-  warning: <Warning />,
-  build: <Build />,
-  bug_report: <BugReport />,
-  science: <Science />,
-  menu_book: <MenuBook />,
-  architecture: <Architecture />,
-  dns: <Dns />,
-  cloud: <Cloud />,
-  dashboard: <Dashboard />,
-};
+interface FoldersResponse {
+  tree: TreeNode[];
+}
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -61,87 +51,119 @@ interface DashboardLayoutProps {
   onSearchChange: (value: string) => void;
 }
 
-function FolderMenu({ folders, selectedFolder, collapsed, onSelect }: {
-  folders: FolderDef[];
+/**
+ * Recursive tree item component
+ */
+function TreeItem({
+  node,
+  depth,
+  selectedFolder,
+  collapsed,
+  onSelect,
+}: {
+  node: TreeNode;
+  depth: number;
   selectedFolder: string | null;
   collapsed: boolean;
-  onSelect: (id: string) => void;
+  onSelect: (path: string) => void;
 }) {
-  // Group folders by path prefix (e.g. "cmdb/hosts" → group "cmdb")
-  const groups: { label: string | null; items: FolderDef[] }[] = [];
-  const seen = new Set<string>();
+  const encodedId = node.path.replace(/\//g, "--");
+  const isSelected = selectedFolder === encodedId;
+  const isAncestor = selectedFolder?.startsWith(encodedId + "--") ?? false;
+  const [userToggled, setUserToggled] = useState<boolean | null>(null);
 
-  for (const folder of folders) {
-    const parts = folder.path.split("/");
-    if (parts.length > 1) {
-      const groupKey = parts[0]!;
-      if (!seen.has(groupKey)) {
-        seen.add(groupKey);
-        const groupItems = folders.filter((f) => f.path.startsWith(groupKey + "/"));
-        groups.push({ label: groupKey.toUpperCase(), items: groupItems });
-      }
-    } else if (!folders.some((f) => f.path.startsWith(folder.path + "/"))) {
-      // Top-level item (not a parent of nested items)
-      if (!seen.has(folder.id)) {
-        seen.add(folder.id);
-        groups.push({ label: null, items: [folder] });
-      }
+  // Open state: user override wins, otherwise auto-expand if selected/ancestor/top-level
+  const open = userToggled !== null
+    ? userToggled
+    : (isSelected || isAncestor || depth === 0);
+
+  const hasChildren = node.children.length > 0;
+
+  const handleClick = () => {
+    if (node.hasMarkdown) {
+      onSelect(encodedId);
     }
+    if (hasChildren) {
+      setUserToggled(!open);
+    }
+  };
+
+  if (collapsed) {
+    // In collapsed mode, only show top-level as icons
+    if (depth > 0) return null;
+    return (
+      <Tooltip title={node.name} placement="right">
+        <ListItemButton
+          selected={isSelected || selectedFolder?.startsWith(encodedId + "--")}
+          onClick={handleClick}
+          sx={{ minHeight: 40, justifyContent: "center", px: 1 }}
+        >
+          <ListItemIcon sx={{ minWidth: 0, justifyContent: "center" }}>
+            {node.hasMarkdown ? <Description fontSize="small" /> : <Folder fontSize="small" />}
+          </ListItemIcon>
+        </ListItemButton>
+      </Tooltip>
+    );
   }
 
   return (
     <>
-      {groups.map((group) =>
-        group.label ? (
-          <Box key={group.label}>
-            {!collapsed && (
-              <Typography variant="caption" color="text.secondary" sx={{ px: 2.5, pt: 1.5, pb: 0.5, display: "block", fontWeight: 600 }}>
-                {group.label}
-              </Typography>
-            )}
-            {group.items.map((folder) => (
-              <Tooltip key={folder.id} title={collapsed ? folder.label : ""} placement="right">
-                <ListItemButton
-                  selected={selectedFolder === folder.id}
-                  onClick={() => onSelect(folder.id)}
-                  sx={{
-                    minHeight: 40,
-                    justifyContent: collapsed ? "center" : "initial",
-                    px: collapsed ? 1 : 2.5,
-                    pl: collapsed ? 1 : 4,
-                  }}
-                >
-                  <ListItemIcon sx={{ minWidth: 0, mr: collapsed ? 0 : 2, justifyContent: "center" }}>
-                    {iconMap[folder.icon] || <MenuBook />}
-                  </ListItemIcon>
-                  {!collapsed && <ListItemText primary={folder.label} />}
-                </ListItemButton>
-              </Tooltip>
-            ))}
+      <ListItemButton
+        selected={isSelected}
+        onClick={handleClick}
+        sx={{
+          minHeight: 36,
+          pl: 2 + depth * 1.5,
+          pr: 1,
+        }}
+      >
+        <ListItemIcon sx={{ minWidth: 28 }}>
+          {hasChildren ? (
+            open ? <FolderOpen fontSize="small" /> : <Folder fontSize="small" />
+          ) : (
+            <Description fontSize="small" />
+          )}
+        </ListItemIcon>
+        <ListItemText
+          primary={formatLabel(node.name)}
+          slotProps={{
+            primary: {
+              variant: "body2",
+              noWrap: true,
+              sx: { fontWeight: isSelected ? 600 : 400 },
+            },
+          }}
+        />
+        {hasChildren && (
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            {open ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />}
           </Box>
-        ) : (
-          group.items.map((folder) => (
-            <Tooltip key={folder.id} title={collapsed ? folder.label : ""} placement="right">
-              <ListItemButton
-                selected={selectedFolder === folder.id}
-                onClick={() => onSelect(folder.id)}
-                sx={{
-                  minHeight: 44,
-                  justifyContent: collapsed ? "center" : "initial",
-                  px: collapsed ? 1 : 2.5,
-                }}
-              >
-                <ListItemIcon sx={{ minWidth: 0, mr: collapsed ? 0 : 2, justifyContent: "center" }}>
-                  {iconMap[folder.icon] || <MenuBook />}
-                </ListItemIcon>
-                {!collapsed && <ListItemText primary={folder.label} />}
-              </ListItemButton>
-            </Tooltip>
-          ))
-        )
+        )}
+      </ListItemButton>
+      {hasChildren && (
+        <Collapse in={open} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            {node.children.map((child) => (
+              <TreeItem
+                key={child.path}
+                node={child}
+                depth={depth + 1}
+                selectedFolder={selectedFolder}
+                collapsed={collapsed}
+                onSelect={onSelect}
+              />
+            ))}
+          </List>
+        </Collapse>
       )}
     </>
   );
+}
+
+function formatLabel(name: string): string {
+  return name
+    .replace(/[-_]/g, " ")
+    .replace(/^\w/, (c) => c.toUpperCase());
 }
 
 export function DashboardLayout({
@@ -156,20 +178,20 @@ export function DashboardLayout({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(() => {
     if (typeof window === "undefined") return false;
-    return localStorage.getItem("itsm-sidebar-collapsed") === "true";
+    return localStorage.getItem("muimark-sidebar-collapsed") === "true";
   });
 
   const toggleCollapsed = () => {
     setCollapsed((prev) => {
       const next = !prev;
-      localStorage.setItem("itsm-sidebar-collapsed", String(next));
+      localStorage.setItem("muimark-sidebar-collapsed", String(next));
       return next;
     });
   };
 
   const currentWidth = collapsed ? DRAWER_WIDTH_COLLAPSED : DRAWER_WIDTH;
 
-  const { data: folders } = useQuery<FolderDef[]>({
+  const { data } = useQuery<FoldersResponse>({
     queryKey: ["folders"],
     queryFn: () => fetch("/api/folders").then((r) => r.json()),
   });
@@ -179,7 +201,7 @@ export function DashboardLayout({
     queryFn: () => fetch("/api/readme").then((r) => r.json()),
   });
 
-  const projectTitle = readmeData?.title || "ITSM";
+  const projectTitle = readmeData?.title || "Muimark";
 
   // Update browser tab title
   useEffect(() => {
@@ -204,7 +226,7 @@ export function DashboardLayout({
         </IconButton>
       </Toolbar>
       <Divider />
-      <List sx={{ flex: 1, overflow: "auto" }}>
+      <List sx={{ flex: 1, overflow: "auto", py: 0.5 }}>
         <Tooltip title={collapsed ? "Home" : ""} placement="right">
           <ListItemButton
             selected={selectedFolder === null}
@@ -213,25 +235,37 @@ export function DashboardLayout({
               setMobileOpen(false);
             }}
             sx={{
-              minHeight: 44,
+              minHeight: 40,
               justifyContent: collapsed ? "center" : "initial",
-              px: collapsed ? 1 : 2.5,
+              px: collapsed ? 1 : 2,
             }}
           >
             <ListItemIcon
               sx={{
-                minWidth: 0,
-                mr: collapsed ? 0 : 2,
+                minWidth: collapsed ? 0 : 28,
+                mr: collapsed ? 0 : 1,
                 justifyContent: "center",
               }}
             >
-              <Dashboard />
+              <Dashboard fontSize="small" />
             </ListItemIcon>
-            {!collapsed && <ListItemText primary="Home" />}
+            {!collapsed && <ListItemText primary="Home" slotProps={{ primary: { variant: "body2" } }} />}
           </ListItemButton>
         </Tooltip>
         <Divider sx={{ my: 0.5 }} />
-        {folders && <FolderMenu folders={folders} selectedFolder={selectedFolder} collapsed={collapsed} onSelect={(id) => { onSelectFolder(id); setMobileOpen(false); }} />}
+        {data?.tree?.map((node) => (
+          <TreeItem
+            key={node.path}
+            node={node}
+            depth={0}
+            selectedFolder={selectedFolder}
+            collapsed={collapsed}
+            onSelect={(id) => {
+              onSelectFolder(id);
+              setMobileOpen(false);
+            }}
+          />
+        ))}
       </List>
     </Box>
   );

@@ -10,30 +10,10 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
-import {
-  Warning,
-  Build,
-  BugReport,
-  Science,
-  MenuBook,
-  Architecture,
-  Dns,
-  Cloud,
-} from "@mui/icons-material";
+import { MenuBook } from "@mui/icons-material";
 import type { FolderDef } from "@/shared/lib/config";
 
 const DRAWER_WIDTH = 240;
-
-const iconMap: Record<string, React.ReactNode> = {
-  warning: <Warning />,
-  build: <Build />,
-  bug_report: <BugReport />,
-  science: <Science />,
-  menu_book: <MenuBook />,
-  architecture: <Architecture />,
-  dns: <Dns />,
-  cloud: <Cloud />,
-};
 
 interface SidebarProps {
   selectedFolder: string | null;
@@ -41,10 +21,12 @@ interface SidebarProps {
 }
 
 export function Sidebar({ selectedFolder, onSelectFolder }: SidebarProps) {
-  const { data: folders } = useQuery<FolderDef[]>({
+  const { data } = useQuery<{ folders: FolderDef[] }>({
     queryKey: ["folders"],
     queryFn: () => fetch("/api/folders").then((r) => r.json()),
   });
+
+  const folders = data?.folders;
 
   return (
     <Drawer
@@ -57,7 +39,7 @@ export function Sidebar({ selectedFolder, onSelectFolder }: SidebarProps) {
     >
       <Toolbar>
         <Typography variant="h6" noWrap>
-          ITSM
+          Muimark
         </Typography>
       </Toolbar>
       <List>
@@ -67,7 +49,7 @@ export function Sidebar({ selectedFolder, onSelectFolder }: SidebarProps) {
             selected={selectedFolder === folder.id}
             onClick={() => onSelectFolder(folder.id)}
           >
-            <ListItemIcon>{iconMap[folder.icon] || <MenuBook />}</ListItemIcon>
+            <ListItemIcon><MenuBook /></ListItemIcon>
             <ListItemText primary={folder.label} />
           </ListItemButton>
         ))}
