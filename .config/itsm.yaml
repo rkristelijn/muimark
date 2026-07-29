@@ -1,4 +1,4 @@
-dataDir: /home/gius/git/hub/iron-legion
+dataDir: /home/gius/git/hub/itsm/data
 folders:
   - id: incidents
     label: Incidents

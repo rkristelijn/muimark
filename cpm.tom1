@@ -9,19 +9,11 @@
 
 [project]
 name = "itsm"
-level = 2
+version = "0.7.0"
 lang = "typescript"
-build = "npm"
-
-[limits]
-file-lines = 300
-files-per-dir = 15
-
-[exclude]
-paths = [".next", "node_modules", "dist", "build", "coverage"]
-
-[checks]
-check-dutch = true
+build = "make"
+config-dir = ".config"
+level = enforce
 
 [tools]
 llvm = "19"
