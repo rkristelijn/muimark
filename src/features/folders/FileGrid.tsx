@@ -31,6 +31,8 @@ import { useColumnConfig } from "./useColumnConfig";
 import { ColumnConfigButton } from "./ColumnConfigButton";
 import { EditableCell } from "./EditableCell";
 import { CreateDialog } from "./CreateDialog";
+import { DeleteDialog } from "./DeleteDialog";
+import { RenameDialog } from "./RenameDialog";
 import { RelatedLinks } from "./RelatedLinks";
 
 interface FileGridProps {
@@ -181,7 +183,35 @@ export function FileGrid({
       }),
     ];
 
-    return [...baseCols, ...fieldCols, ...gitCols];
+    // Actions column
+    const actionsCols = [
+      columnHelper.display({
+        id: "_actions",
+        header: "",
+        cell: (info) => (
+          <Box sx={{ display: "flex", gap: 0 }} onClick={(e) => e.stopPropagation()}>
+            <RenameDialog
+              folderId={folderId}
+              fileId={info.row.original.id}
+              onRenamed={(newId) => {
+                queryClient.invalidateQueries({ queryKey: ["folder", folderId] });
+                onSelectFile(newId);
+              }}
+            />
+            <DeleteDialog
+              folderId={folderId}
+              fileId={info.row.original.id}
+              fileTitle={info.row.original.title}
+              onDeleted={() => {
+                queryClient.invalidateQueries({ queryKey: ["folder", folderId] });
+              }}
+            />
+          </Box>
+        ),
+      }),
+    ];
+
+    return [...baseCols, ...fieldCols, ...gitCols, ...actionsCols];
   })();
 
   const table = useReactTable({

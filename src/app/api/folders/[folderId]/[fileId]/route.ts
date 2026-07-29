@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getFile, saveFile } from "@/shared/lib/files";
+import { getFile, saveFile, deleteFile, renameFile } from "@/shared/lib/files";
 import { getFolderDef, getAbsolutePath } from "@/shared/lib/config";
 import { indexRelations } from "@/shared/lib/relations";
 import path from "path";
@@ -58,5 +58,52 @@ export async function PUT(
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ error: "Failed to save file" }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ folderId: string; fileId: string }> }
+) {
+  try {
+    const { folderId, fileId } = await params;
+    const folder = getFolderDef(folderId);
+    if (!folder) {
+      return NextResponse.json({ error: "Folder not found" }, { status: 404 });
+    }
+
+    deleteFile(folderId, fileId);
+    return NextResponse.json({ ok: true, message: `Deleted ${fileId}` });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to delete file";
+    const status = message.includes("not found") ? 404 : 500;
+    return NextResponse.json({ error: message }, { status });
+  }
+}
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ folderId: string; fileId: string }> }
+) {
+  try {
+    const { folderId, fileId } = await params;
+    const folder = getFolderDef(folderId);
+    if (!folder) {
+      return NextResponse.json({ error: "Folder not found" }, { status: 404 });
+    }
+
+    const body = await request.json();
+    const { newName } = body;
+
+    if (!newName || typeof newName !== "string" || newName.trim().length === 0) {
+      return NextResponse.json({ error: "newName is required" }, { status: 400 });
+    }
+
+    const newId = renameFile(folderId, fileId, newName.trim());
+    return NextResponse.json({ ok: true, newId, message: `Renamed to ${newId}` });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to rename file";
+    const status = message.includes("not found") ? 404 : message.includes("already exists") ? 409 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { listFiles, createFile } from "@/shared/lib/files";
+import { listFiles, createFile, deleteFolder, renameFolder } from "@/shared/lib/files";
 import { getFolderDef } from "@/shared/lib/config";
 import { getGitMetaBatch } from "@/shared/lib/git-meta";
 
@@ -54,5 +54,53 @@ export async function POST(
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to create file";
     return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ folderId: string }> }
+) {
+  try {
+    const { folderId } = await params;
+    const folder = getFolderDef(folderId);
+    if (!folder) {
+      return NextResponse.json({ error: "Folder not found" }, { status: 404 });
+    }
+
+    deleteFolder(folderId);
+    return NextResponse.json({ ok: true, message: `Deleted folder ${folderId}` });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to delete folder";
+    const status = message.includes("not found") ? 404 : message.includes("not empty") ? 409 : 500;
+    return NextResponse.json({ error: message }, { status });
+  }
+}
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ folderId: string }> }
+) {
+  try {
+    const { folderId } = await params;
+    const folder = getFolderDef(folderId);
+    if (!folder) {
+      return NextResponse.json({ error: "Folder not found" }, { status: 404 });
+    }
+
+    const body = await request.json();
+    const { newName } = body;
+
+    if (!newName || typeof newName !== "string" || newName.trim().length === 0) {
+      return NextResponse.json({ error: "newName is required" }, { status: 400 });
+    }
+
+    const newPath = renameFolder(folderId, newName.trim());
+    const newId = newPath.replace(/\//g, "--");
+    return NextResponse.json({ ok: true, newId, newPath, message: `Renamed to ${newName}` });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to rename folder";
+    const status = message.includes("not found") ? 404 : message.includes("already exists") ? 409 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
-import { getConfig, getFolderDef, getAbsolutePath } from "./config";
+import { getConfig, getFolderDef, getAbsolutePath, clearConfigCache } from "./config";
 import type { FolderDef } from "./config";
 
 /**
@@ -280,6 +280,114 @@ export function getNextId(folderId: string): string {
   const max = numbers.length > 0 ? Math.max(...numbers) : 0;
   const next = String(max + 1).padStart(3, "0");
   return `${prefix}-${next}`;
+}
+
+/**
+ * Delete a file from a folder.
+ */
+export function deleteFile(folderId: string, fileId: string): void {
+  const folder = getFolderDef(folderId);
+  if (!folder) throw new Error(`Unknown folder: ${folderId}`);
+
+  const filePath = path.join(getAbsolutePath(folder.path), sanitizeFilename(`${fileId}.md`));
+  if (!fs.existsSync(filePath)) throw new Error(`File not found: ${fileId}`);
+
+  fs.unlinkSync(filePath);
+}
+
+/**
+ * Rename a file within its folder.
+ * Returns the new file ID (basename without .md).
+ */
+export function renameFile(folderId: string, fileId: string, newName: string): string {
+  const folder = getFolderDef(folderId);
+  if (!folder) throw new Error(`Unknown folder: ${folderId}`);
+
+  const dirPath = getAbsolutePath(folder.path);
+  const oldPath = path.join(dirPath, sanitizeFilename(`${fileId}.md`));
+  if (!fs.existsSync(oldPath)) throw new Error(`File not found: ${fileId}`);
+
+  // Sanitize and ensure .md extension
+  const sanitizedName = sanitizeFilename(newName.replace(/\.md$/, ""));
+  const newFilename = `${sanitizedName}.md`;
+  const newPath = path.join(dirPath, newFilename);
+
+  if (fs.existsSync(newPath)) throw new Error(`File already exists: ${sanitizedName}`);
+
+  fs.renameSync(oldPath, newPath);
+  return sanitizedName;
+}
+
+/**
+ * Create a new folder (directory) under the dataDir.
+ * Returns the folder path relative to dataDir.
+ */
+export function createFolder(folderPath: string): string {
+  const config = getConfig();
+  const baseDir = path.resolve(config.dataDir);
+  const sanitizedPath = folderPath.split("/").map((s) => sanitizeFilename(s)).join("/");
+  const absPath = path.resolve(baseDir, sanitizedPath);
+
+  // Prevent path traversal
+  if (!absPath.startsWith(baseDir + path.sep) && absPath !== baseDir) {
+    throw new Error(`Path traversal detected: ${folderPath}`);
+  }
+
+  if (fs.existsSync(absPath)) throw new Error(`Folder already exists: ${folderPath}`);
+
+  fs.mkdirSync(absPath, { recursive: true });
+
+  // Clear config cache so new folder appears in discovery
+  clearConfigCache();
+  return sanitizedPath;
+}
+
+/**
+ * Delete an empty folder. Refuses if folder contains files.
+ */
+export function deleteFolder(folderId: string): void {
+  const folder = getFolderDef(folderId);
+  if (!folder) throw new Error(`Unknown folder: ${folderId}`);
+
+  const dirPath = getAbsolutePath(folder.path);
+  if (!fs.existsSync(dirPath)) throw new Error(`Folder not found: ${folderId}`);
+
+  const entries = fs.readdirSync(dirPath);
+  if (entries.length > 0) throw new Error(`Folder is not empty (${entries.length} items). Delete all files first.`);
+
+  fs.rmdirSync(dirPath);
+  clearConfigCache();
+}
+
+/**
+ * Rename a folder (directory).
+ * Returns the new relative path.
+ */
+export function renameFolder(folderId: string, newName: string): string {
+  const folder = getFolderDef(folderId);
+  if (!folder) throw new Error(`Unknown folder: ${folderId}`);
+
+  const config = getConfig();
+  const baseDir = path.resolve(config.dataDir);
+  const oldPath = getAbsolutePath(folder.path);
+
+  // Keep the parent directory, just rename the last segment
+  const parentDir = path.dirname(oldPath);
+  const sanitizedName = sanitizeFilename(newName);
+  const newPath = path.join(parentDir, sanitizedName);
+
+  // Prevent path traversal
+  if (!newPath.startsWith(baseDir + path.sep) && newPath !== baseDir) {
+    throw new Error(`Path traversal detected: ${newName}`);
+  }
+
+  if (fs.existsSync(newPath)) throw new Error(`Folder already exists: ${newName}`);
+
+  fs.renameSync(oldPath, newPath);
+  clearConfigCache();
+
+  // Return the new relative path
+  return path.relative(baseDir, newPath);
 }
 
 /**
