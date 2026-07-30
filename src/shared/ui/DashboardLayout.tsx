@@ -176,10 +176,11 @@ export function DashboardLayout({
 }: DashboardLayoutProps) {
   const { mode, toggleTheme } = useThemeMode();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem("muimark-sidebar-collapsed") === "true";
-  });
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    setCollapsed(localStorage.getItem("muimark-sidebar-collapsed") === "true");
+  }, []);
 
   const toggleCollapsed = () => {
     setCollapsed((prev) => {

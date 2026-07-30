@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useState,
+  useEffect,
   useCallback,
   useMemo,
   type ReactNode,
@@ -29,14 +30,24 @@ export function useThemeMode() {
 const STORAGE_KEY = "itsm-theme-mode";
 
 function getInitialMode(): ThemeMode {
-  if (typeof window === "undefined") return "dark";
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored === "light" || stored === "dark") return stored;
-  return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+  return "dark";
 }
 
 export function AppThemeProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<ThemeMode>(getInitialMode);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    const nextMode: ThemeMode =
+      stored === "light" || stored === "dark"
+        ? stored
+        : window.matchMedia("(prefers-color-scheme: light)").matches
+          ? "light"
+          : "dark";
+
+    setMode(nextMode);
+    document.documentElement.setAttribute("data-mui-color-scheme", nextMode);
+  }, []);
 
   const toggleTheme = useCallback(() => {
     setMode((prev) => {

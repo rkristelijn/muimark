@@ -21,7 +21,7 @@ function parseUrl(): { folder: string | null; file: string | null } {
 }
 
 export default function Home() {
-  const [selectedFolder, setSelectedFolder] = useState<string | null>(() => parseUrl().folder);
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [searchValue, setSearchValue] = useState("");
   const [searchSelectedFolder, setSearchSelectedFolder] = useState<string | null>(null);
@@ -30,6 +30,8 @@ export default function Home() {
   // On init: resolve file slug from URL to actual fileId
   useEffect(() => {
     const { folder, file } = parseUrl();
+    setSelectedFolder(folder);
+
     if (folder && file) {
       // Try resolving as displayId first
       fetch(`/api/resolve?id=${encodeURIComponent(file)}`)
