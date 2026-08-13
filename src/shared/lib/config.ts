@@ -20,6 +20,7 @@ export interface FolderDef {
   label: string;
   path: string;
   icon: string;
+  type?: "csv";
   idPattern?: string;
   fields: FieldDef[];
 }
@@ -147,7 +148,7 @@ function treeToFolders(nodes: TreeNode[]): FolderDef[] {
   function walk(node: TreeNode) {
     if (node.hasMarkdown) {
       folders.push({
-        id: node.path.replace(/\//g, "--"),  // encode path as id
+        id: node.path.replace(/\//g, "--"),
         label: formatLabel(node.name),
         path: node.path,
         icon: "menu_book",

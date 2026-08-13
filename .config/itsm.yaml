@@ -1,4 +1,4 @@
-dataDir: ./data
+dataDir: ../iron-legion
 folders:
   - id: incidents
     label: Incidents
@@ -36,175 +36,180 @@ folders:
       - name: impact
         label: Impact
         type: text
-  # - id: problems
-  #   label: Problems
-  #   path: problems
-  #   icon: bug_report
-  #   idPattern: ^(P-\d+)
-  #   fields:
-  #     - name: status
-  #       label: Status
-  #       type: select
-  #       options:
-  #         - { value: Identified, color: info }
-  #         - { value: Investigating, color: warning }
-  #         - { value: Known Error, color: error }
-  #         - { value: Resolved, color: success }
-  #     - name: created
-  #       label: Created
-  #       type: date
-  #     - name: resolved
-  #       label: Resolved
-  #       type: date
-  #     - name: related_incidents
-  #       label: Related Incidents
-  #       type: text
-  # - id: changes
-  #   label: Changes
-  #   path: changes
-  #   icon: build
-  #   idPattern: ^(SC-\d+)
-  #   fields:
-  #     - name: status
-  #       label: Status
-  #       type: select
-  #       options:
-  #         - { value: Proposed, color: default }
-  #         - { value: Planned, color: info }
-  #         - { value: Implementing, color: warning }
-  #         - { value: Validating, color: info }
-  #         - { value: Closed, color: success }
-  #         - { value: Rolled Back, color: error }
-  #       aliases:
-  #         - status
-  #     - name: priority
-  #       label: Priority
-  #       type: select
-  #       options:
-  #         - { value: Critical, color: error }
-  #         - { value: High, color: warning }
-  #         - { value: Medium, color: info }
-  #         - { value: Low, color: success }
-  #     - name: created
-  #       label: Created
-  #       type: date
-  #       aliases:
-  #         - aangemaakt
-  #     - name: scheduled
-  #       label: Scheduled
-  #       type: date
-  #     - name: completed
-  #       label: Completed
-  #       type: date
-  # - id: requests
-  #   label: Requests
-  #   path: docs/research
-  #   icon: science
-  #   idPattern: ^(R-\d+)
-  #   fields:
-  #     - name: status
-  #       label: Status
-  #       type: select
-  #       options:
-  #         - { value: Requested, color: default }
-  #         - { value: Researching, color: info }
-  #         - { value: Approved, color: success }
-  #         - { value: Rejected, color: error }
-  #         - { value: Delivered, color: success }
-  #     - name: created
-  #       label: Created
-  #       type: date
-  #     - name: delivered
-  #       label: Delivered
-  #       type: date
-  # - id: runbooks
-  #   label: Runbooks
-  #   path: docs/runbooks
-  #   icon: menu_book
-  #   idPattern: ^(RB-\d+)
-  #   fields:
-  #     - name: status
-  #       label: Status
-  #       type: select
-  #       options:
-  #         - { value: Draft, color: default }
-  #         - { value: Active, color: success }
-  #         - { value: Deprecated, color: warning }
-  # - id: adrs
-  #   label: Decisions (ADR)
-  #   path: docs/adr
-  #   icon: architecture
-  #   idPattern: ^(ADR-\d+)
-  #   fields:
-  #     - name: status
-  #       label: Status
-  #       type: select
-  #       options:
-  #         - { value: Proposed, color: default }
-  #         - { value: Accepted, color: success }
-  #         - { value: Deprecated, color: warning }
-  #         - { value: Superseded, color: info }
-  #         - { value: Rejected, color: error }
-  #     - name: date
-  #       label: Date
-  #       type: date
-  #     - name: supersedes
-  #       label: Supersedes
-  #       type: text
-  # - id: cmdb-hosts
-  #   label: "CMDB: Hosts"
-  #   path: cmdb/hosts
-  #   icon: dns
-  #   fields:
-  #     - name: status
-  #       label: Status
-  #       type: select
-  #       options:
-  #         - { value: Active, color: success }
-  #         - { value: Maintenance, color: warning }
-  #         - { value: Decommissioned, color: error }
-  #     - name: type
-  #       label: Type
-  #       type: select
-  #       options:
-  #         - server
-  #         - network
-  #         - storage
-  #         - iot
-  #     - name: ip
-  #       label: IP Address
-  #       type: text
-  #     - name: os
-  #       label: OS
-  #       type: text
-  #     - name: ram
-  #       label: RAM
-  #       type: text
-  #     - name: location
-  #       label: Location
-  #       type: text
-  # - id: cmdb-services
-    # label: "CMDB: Services"
-    # path: cmdb/services
-    # icon: cloud
-    # fields:
-    #   - name: status
-    #     label: Status
-    #     type: select
-    #     options:
-    #       - { value: Active, color: success }
-    #       - { value: Degraded, color: warning }
-    #       - { value: Down, color: error }
-    #       - { value: Planned, color: info }
-    #   - name: host
-    #     label: Host
-    #     type: text
-    #   - name: port
-    #     label: Port
-    #     type: text
-    #   - name: url
-    #     label: URL
-    #     type: text
-    #   - name: depends_on
-    #     label: Depends On
-    #     type: text
+  - id: problems
+    label: Problems
+    path: problems
+    icon: bug_report
+    idPattern: ^(P-\d+)
+    fields:
+      - name: status
+        label: Status
+        type: select
+        options:
+          - { value: Identified, color: info }
+          - { value: Investigating, color: warning }
+          - { value: Known Error, color: error }
+          - { value: Resolved, color: success }
+      - name: created
+        label: Created
+        type: date
+      - name: resolved
+        label: Resolved
+        type: date
+      - name: related_incidents
+        label: Related Incidents
+        type: text
+  - id: changes
+    label: Changes
+    path: changes
+    icon: build
+    idPattern: ^(SC-\d+)
+    fields:
+      - name: status
+        label: Status
+        type: select
+        options:
+          - { value: Proposed, color: default }
+          - { value: Planned, color: info }
+          - { value: Implementing, color: warning }
+          - { value: Validating, color: info }
+          - { value: Closed, color: success }
+          - { value: Rolled Back, color: error }
+        aliases:
+          - status
+      - name: priority
+        label: Priority
+        type: select
+        options:
+          - { value: Critical, color: error }
+          - { value: High, color: warning }
+          - { value: Medium, color: info }
+          - { value: Low, color: success }
+      - name: created
+        label: Created
+        type: date
+        aliases:
+          - aangemaakt
+      - name: scheduled
+        label: Scheduled
+        type: date
+      - name: completed
+        label: Completed
+        type: date
+  - id: requests
+    label: Requests
+    path: docs/research
+    icon: science
+    idPattern: ^(R-\d+)
+    fields:
+      - name: status
+        label: Status
+        type: select
+        options:
+          - { value: Requested, color: default }
+          - { value: Researching, color: info }
+          - { value: Approved, color: success }
+          - { value: Rejected, color: error }
+          - { value: Delivered, color: success }
+      - name: created
+        label: Created
+        type: date
+      - name: delivered
+        label: Delivered
+        type: date
+  - id: runbooks
+    label: Runbooks
+    path: runbooks
+    icon: menu_book
+    idPattern: ^(RB-\d+)
+    fields:
+      - name: status
+        label: Status
+        type: select
+        options:
+          - { value: Draft, color: default }
+          - { value: Active, color: success }
+          - { value: Deprecated, color: warning }
+  - id: adrs
+    label: Decisions (ADR)
+    path: docs/adr
+    icon: architecture
+    idPattern: ^(ADR-\d+)
+    fields:
+      - name: status
+        label: Status
+        type: select
+        options:
+          - { value: Proposed, color: default }
+          - { value: Accepted, color: success }
+          - { value: Deprecated, color: warning }
+          - { value: Superseded, color: info }
+          - { value: Rejected, color: error }
+      - name: date
+        label: Date
+        type: date
+      - name: supersedes
+        label: Supersedes
+        type: text
+  - id: cmdb-hosts
+    label: "CMDB: Hosts"
+    path: cmdb/hosts
+    icon: dns
+    fields:
+      - name: status
+        label: Status
+        type: select
+        options:
+          - { value: Active, color: success }
+          - { value: Maintenance, color: warning }
+          - { value: Decommissioned, color: error }
+      - name: type
+        label: Type
+        type: select
+        options:
+          - server
+          - network
+          - storage
+          - iot
+      - name: ip
+        label: IP Address
+        type: text
+      - name: os
+        label: OS
+        type: text
+      - name: ram
+        label: RAM
+        type: text
+      - name: location
+        label: Location
+        type: text
+  - id: cmdb-services
+    label: "CMDB: Services"
+    path: cmdb/services
+    icon: cloud
+    fields:
+      - name: status
+        label: Status
+        type: select
+        options:
+          - { value: Active, color: success }
+          - { value: Degraded, color: warning }
+          - { value: Down, color: error }
+          - { value: Planned, color: info }
+      - name: host
+        label: Host
+        type: text
+      - name: port
+        label: Port
+        type: text
+      - name: url
+        label: URL
+        type: text
+      - name: depends_on
+        label: Depends On
+        type: text
+  - id: inventory
+    label: Inventory
+    type: csv
+    path: data/inventory.csv
+    icon: grid_on

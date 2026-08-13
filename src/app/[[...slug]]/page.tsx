@@ -7,6 +7,7 @@ import { DashboardLayout } from "@/shared/ui";
 import { FileGrid } from "@/features/folders";
 import { DetailPanel } from "@/features/editor";
 import { SearchResults } from "@/features/search";
+import { CsvGrid } from "@/features/csv";
 import dynamic from "next/dynamic";
 
 const MarkdownEditor = dynamic(() => import("@/features/editor/MarkdownEditor"), { ssr: false });
@@ -23,6 +24,8 @@ function parseUrl(): { folder: string | null; file: string | null } {
 export default function Home() {
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [selectedFileCsv, setSelectedFileCsv] = useState(false);
+  const [folderPath, setFolderPath] = useState<string | null>(null);
   const [searchValue, setSearchValue] = useState("");
   const [searchSelectedFolder, setSearchSelectedFolder] = useState<string | null>(null);
   const [searchSelectedFile, setSearchSelectedFile] = useState<string | null>(null);
@@ -40,17 +43,19 @@ export default function Home() {
           if (data.fileId) {
             setSelectedFile(data.fileId);
           } else {
-            // Fallback: use as-is (it might be the actual fileId)
             setSelectedFile(file);
           }
         })
         .catch(() => setSelectedFile(file));
     } else if (folder) {
-      // Auto-select first file
+      // Fetch folder info
       fetch(`/api/folders/${folder}`)
         .then((r) => r.json())
         .then((data) => {
-          if (data.files?.length) {
+          if (data.folder?.path) setFolderPath(data.folder.path);
+          if (data.folder?.type === "csv") {
+            setSelectedFileCsv(true);
+          } else if (data.files?.length) {
             setSelectedFile(data.files[0].id);
           }
         })
@@ -81,14 +86,22 @@ export default function Home() {
   const handleSelectFolder = (id: string) => {
     setSelectedFolder(id);
     setSelectedFile(null);
+    setSelectedFileCsv(false);
     setSearchValue("");
     setSearchSelectedFolder(null);
     setSearchSelectedFile(null);
 
-    // Auto-select first file
+    // Fetch folder info
     fetch(`/api/folders/${id}`)
       .then((r) => r.json())
       .then((data) => {
+        if (data.folder?.path) setFolderPath(data.folder.path);
+        // CSV type → render grid directly
+        if (data.folder?.type === "csv") {
+          setSelectedFileCsv(true);
+          navigate(id, null);
+          return;
+        }
         if (data.files?.length) {
           const first = data.files[0];
           setSelectedFile(first.id);
@@ -199,28 +212,35 @@ export default function Home() {
       {/* Normal folder view */}
       {!isSearching && selectedFolder && (
         <Box sx={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-          <Box sx={{ flex: 1, overflow: "hidden", minHeight: 0 }}>
-            <FileGrid
-              folderId={selectedFolder}
-              selectedFile={selectedFile}
-              onSelectFile={handleSelectFile}
-              onNavigate={handleNavigate}
-              onCreated={handleSelectFile}
-              searchFilter=""
-            />
-          </Box>
-          {selectedFile && (
-            <Box
-              sx={{
-                flex: 1,
-                overflow: "auto",
-                minHeight: 0,
-                borderTop: 1,
-                borderColor: "divider",
-              }}
-            >
-              <DetailPanel key={selectedFile} folderId={selectedFolder} fileId={selectedFile} onNavigate={handleEditorNavigate} />
-            </Box>
+          {/* CSV type → full screen grid */}
+          {selectedFileCsv && folderPath ? (
+            <CsvGrid csvPath={folderPath} />
+          ) : (
+            <>
+              <Box sx={{ flex: 1, overflow: "hidden", minHeight: 0 }}>
+                <FileGrid
+                  folderId={selectedFolder}
+                  selectedFile={selectedFile}
+                  onSelectFile={handleSelectFile}
+                  onNavigate={handleNavigate}
+                  onCreated={handleSelectFile}
+                  searchFilter=""
+                />
+              </Box>
+              {selectedFile && (
+                <Box
+                  sx={{
+                    flex: 1,
+                    overflow: "auto",
+                    minHeight: 0,
+                    borderTop: 1,
+                    borderColor: "divider",
+                  }}
+                >
+                  <DetailPanel key={selectedFile} folderId={selectedFolder} fileId={selectedFile} onNavigate={handleEditorNavigate} />
+                </Box>
+              )}
+            </>
           )}
         </Box>
       )}
