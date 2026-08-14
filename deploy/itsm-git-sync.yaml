@@ -1,0 +1,107 @@
+---
+# ITSM Git Sync — auto-commit changes to iron-legion repo
+# Runs every 6 hours + can be triggered on-demand via:
+#   kubectl -n infra create job itsm-sync-now --from=cronjob/itsm-git-sync
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: itsm-git-sync-script
+  namespace: infra
+data:
+  sync.sh: |
+    #!/bin/sh
+    set -u
+
+    REPO="/repo"
+
+    # Git safe directory (hostPath ownership mismatch in container)
+    git config --global safe.directory "$REPO"
+    git config --global user.name "itsm-bot"
+    git config --global user.email "itsm@gius.nl"
+
+    # SSH via host key
+    export GIT_SSH_COMMAND="ssh -i /ssh/id_github -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR"
+
+    cd "$REPO" || exit 1
+
+    # Fetch latest (non-destructive)
+    git fetch origin main --quiet 2>/dev/null || true
+
+    # Check for uncommitted changes
+    CHANGED=$(git status --porcelain | wc -l | tr -d ' ')
+    if [ "$CHANGED" = "0" ]; then
+      echo "$(date '+%Y-%m-%d %H:%M:%S') No changes to commit"
+      exit 0
+    fi
+
+    # Build commit message from what changed
+    INCIDENTS=$(git status --porcelain incidents/ 2>/dev/null | wc -l | tr -d ' ')
+    CHANGES=$(git status --porcelain changes/ 2>/dev/null | wc -l | tr -d ' ')
+    PROBLEMS=$(git status --porcelain problems/ 2>/dev/null | wc -l | tr -d ' ')
+    CMDB=$(git status --porcelain cmdb/ 2>/dev/null | wc -l | tr -d ' ')
+    OTHER=$((CHANGED - INCIDENTS - CHANGES - PROBLEMS - CMDB))
+
+    MSG="itsm: auto-sync"
+    PARTS=""
+    [ "$INCIDENTS" -gt 0 ] && PARTS="${PARTS} ${INCIDENTS} incident(s)"
+    [ "$CHANGES" -gt 0 ] && PARTS="${PARTS} ${CHANGES} change(s)"
+    [ "$PROBLEMS" -gt 0 ] && PARTS="${PARTS} ${PROBLEMS} problem(s)"
+    [ "$CMDB" -gt 0 ] && PARTS="${PARTS} ${CMDB} cmdb update(s)"
+    [ "$OTHER" -gt 0 ] && PARTS="${PARTS} ${OTHER} other"
+    [ -n "$PARTS" ] && MSG="itsm:${PARTS}"
+
+    # Commit
+    git add -A
+    git commit -m "$MSG" --quiet
+
+    # Push
+    if git push origin main --quiet 2>&1; then
+      echo "$(date '+%Y-%m-%d %H:%M:%S') PUSHED: $MSG"
+    else
+      echo "$(date '+%Y-%m-%d %H:%M:%S') COMMIT (push failed): $MSG"
+      exit 1
+    fi
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: itsm-git-sync
+  namespace: infra
+spec:
+  schedule: "0 */6 * * *"  # Every 6 hours
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: 120
+      template:
+        spec:
+          nodeSelector:
+            kubernetes.io/hostname: pepper
+          restartPolicy: Never
+          containers:
+            - name: git-sync
+              image: alpine/git:2.47.2
+              command: ["/bin/sh", "/scripts/sync.sh"]
+              volumeMounts:
+                - name: repo
+                  mountPath: /repo
+                - name: script
+                  mountPath: /scripts
+                - name: ssh-key
+                  mountPath: /ssh
+                  readOnly: true
+          volumes:
+            - name: repo
+              hostPath:
+                path: /home/gius/git/hub/iron-legion
+                type: Directory
+            - name: script
+              configMap:
+                name: itsm-git-sync-script
+                defaultMode: 0755
+            - name: ssh-key
+              hostPath:
+                path: /home/gius/.ssh
+                type: Directory
