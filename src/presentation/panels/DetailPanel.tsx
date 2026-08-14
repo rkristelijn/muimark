@@ -4,7 +4,7 @@ import { Box, CircularProgress, Typography, Chip } from '@mui/material';
 import dynamic from 'next/dynamic';
 import { useAutoSave } from '@/logic/hooks/useAutoSave';
 
-const MarkdownEditor = dynamic(() => import('./MarkdownEditor'), { ssr: false });
+const MarkdownEditor = dynamic(() => import('../widgets/MarkdownEditor'), { ssr: false });
 
 interface DetailPanelProps {
   folderId: string;

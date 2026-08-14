@@ -28,7 +28,7 @@ import {
   Refresh,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
-import { KpiCard } from "@/features/dashboard/KpiCard";
+import { KpiCard } from "@/presentation/controls/KpiCard";
 import type { DashboardMetrics } from "@/shared/lib/types";
 
 function StatusChip({ status }: { status: string }) {

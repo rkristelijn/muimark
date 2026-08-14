@@ -28,12 +28,12 @@ import { useState, useEffect, useCallback } from "react";
 import type { FileEntry } from "@/shared/lib/files";
 import type { FolderDef } from "@/shared/lib/config";
 import { useColumnConfig } from "@/logic/hooks/useColumnConfig";
-import { ColumnConfigButton } from "./ColumnConfigButton";
-import { EditableCell } from "./EditableCell";
-import { CreateDialog } from "./CreateDialog";
-import { DeleteDialog } from "./DeleteDialog";
-import { RenameDialog } from "./RenameDialog";
-import { RelatedLinks } from "./RelatedLinks";
+import { ColumnConfigButton } from "@/presentation/widgets/ColumnConfigButton";
+import { EditableCell } from "@/presentation/controls/EditableCell";
+import { CreateDialog } from "@/presentation/widgets/CreateDialog";
+import { DeleteDialog } from "@/presentation/widgets/DeleteDialog";
+import { RenameDialog } from "@/presentation/widgets/RenameDialog";
+import { RelatedLinks } from "@/presentation/controls/RelatedLinks";
 
 interface FileGridProps {
   folderId: string;

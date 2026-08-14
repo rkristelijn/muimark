@@ -34,7 +34,7 @@ import {
   GridOn,
 } from "@mui/icons-material";
 import { useQuery } from "@tanstack/react-query";
-import { useThemeMode } from "./ThemeContext";
+import { useThemeMode } from "../controls/ThemeContext";
 import { FolderActions } from "@/features/folders/FolderActions";
 import type { TreeNode } from "@/shared/lib/config";
 
