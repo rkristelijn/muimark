@@ -1,0 +1,31 @@
+language: en
+reviews:
+  profile: assertive
+  high_level_summary: true
+  review_status: true
+  poem: false
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+  path_instructions:
+    - path: "src/state/**"
+      instructions: |
+        State hooks must be pure logic — no JSX, no UI imports.
+        Max 3 useState per hook. Must be testable with renderHook.
+    - path: "src/plugins/**"
+      instructions: |
+        Plugins must be self-contained. No imports from src/features/ or src/app/.
+        Each plugin exports via index.ts barrel.
+    - path: "src/features/**"
+      instructions: |
+        Feature components. No direct fetch() — use hooks from src/state/ or react-query.
+    - path: "src/shared/ui/**"
+      instructions: |
+        Presentational components. No fetch(), no direct API calls.
+        Props in, events out.
+    - path: "checks/**"
+      instructions: "Shell scripts with set -euo pipefail. Must exit 0 on success, 1 on failure."
+    - path: "e2e/**"
+      instructions: "Playwright E2E tests. Use data-testid attributes where possible."
+chat:
+  auto_reply: true
