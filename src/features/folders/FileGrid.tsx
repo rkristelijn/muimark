@@ -27,7 +27,7 @@ import {
 import { useState, useEffect, useCallback } from "react";
 import type { FileEntry } from "@/shared/lib/files";
 import type { FolderDef } from "@/shared/lib/config";
-import { useColumnConfig } from "./useColumnConfig";
+import { useColumnConfig } from "@/logic/hooks/useColumnConfig";
 import { ColumnConfigButton } from "./ColumnConfigButton";
 import { EditableCell } from "./EditableCell";
 import { CreateDialog } from "./CreateDialog";

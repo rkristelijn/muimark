@@ -12,7 +12,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import { Delete } from "@mui/icons-material";
-import { useFileActions } from "./useFileActions";
+import { useFileActions } from "@/logic/hooks/useFileActions";
 
 interface DeleteDialogProps {
   folderId: string;

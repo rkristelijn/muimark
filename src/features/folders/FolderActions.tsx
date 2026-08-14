@@ -22,7 +22,7 @@ import {
   DriveFileRenameOutline,
   MoreVert,
 } from "@mui/icons-material";
-import { useFolderActions } from "./useFolderActions";
+import { useFolderActions } from "@/logic/hooks/useFolderActions";
 
 interface FolderActionsProps {
   folderId?: string;

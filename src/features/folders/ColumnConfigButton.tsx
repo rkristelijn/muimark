@@ -17,7 +17,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import { ViewColumn, ArrowUpward, ArrowDownward } from "@mui/icons-material";
-import type { ColumnConfigEntry } from "./useColumnConfig";
+import type { ColumnConfigEntry } from "@/logic/hooks/useColumnConfig";
 
 interface ColumnDef {
   field: string;
