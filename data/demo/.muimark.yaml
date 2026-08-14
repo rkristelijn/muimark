@@ -1,0 +1,98 @@
+# Muimark Demo Configuration
+# This config demonstrates all features with sample ITSM data.
+# Start with: MUIMARK_DATA_DIR=./data/demo npm run dev
+
+dataDir: .
+
+folders:
+  - id: incidents
+    label: Incidents
+    path: incidents
+    icon: warning
+    idPattern: "^(I-\\d+)"
+    fields:
+      - name: status
+        label: Status
+        type: select
+        options:
+          - { value: Open, color: warning }
+          - { value: Investigating, color: info }
+          - { value: Resolved, color: success }
+          - { value: Closed, color: success }
+      - name: severity
+        label: Severity
+        type: select
+        options:
+          - { value: Critical, color: error }
+          - { value: High, color: warning }
+          - { value: Medium, color: info }
+          - { value: Low, color: success }
+      - name: date
+        label: Date
+        type: date
+      - name: duration
+        label: Duration
+        type: text
+
+  - id: changes
+    label: Changes
+    path: changes
+    icon: build
+    idPattern: "^(SC-\\d+)"
+    fields:
+      - name: status
+        label: Status
+        type: select
+        options:
+          - { value: Proposed, color: default }
+          - { value: Planned, color: info }
+          - { value: Implementing, color: warning }
+          - { value: Closed, color: success }
+          - { value: Rolled Back, color: error }
+      - name: priority
+        label: Priority
+        type: select
+        options:
+          - { value: Critical, color: error }
+          - { value: High, color: warning }
+          - { value: Medium, color: info }
+          - { value: Low, color: success }
+      - name: scheduled
+        label: Scheduled
+        type: date
+
+  - id: runbooks
+    label: Runbooks
+    path: runbooks
+    icon: menu_book
+    idPattern: "^(RB-\\d+)"
+    fields:
+      - name: status
+        label: Status
+        type: select
+        options:
+          - { value: Draft, color: default }
+          - { value: Active, color: success }
+          - { value: Deprecated, color: warning }
+
+  - id: services
+    label: Services
+    path: services
+    icon: cloud
+    fields:
+      - name: status
+        label: Status
+        type: select
+        options:
+          - { value: Active, color: success }
+          - { value: Degraded, color: warning }
+          - { value: Down, color: error }
+      - name: host
+        label: Host
+        type: text
+      - name: port
+        label: Port
+        type: text
+      - name: url
+        label: URL
+        type: text
