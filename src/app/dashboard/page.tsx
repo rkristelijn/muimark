@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDateTime } from "@/logic/time";
 import { useQuery } from "@tanstack/react-query";
 import {
   Box,
@@ -28,7 +29,7 @@ import {
   Refresh,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
-import { KpiCard } from "@/features/dashboard";
+import { KpiCard } from "@/presentation/controls/KpiCard";
 import type { DashboardMetrics } from "@/shared/lib/types";
 
 function StatusChip({ status }: { status: string }) {
@@ -74,7 +75,7 @@ export default function DashboardPage() {
           </IconButton>
         </Tooltip>
         <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-          {new Date(data.timestamp).toLocaleString("nl-NL")}
+          {formatDateTime(data.timestamp)}
         </Typography>
       </Box>
 

@@ -7,7 +7,7 @@ url: 'https://grafana.example.com'
 # Monitoring Stack
 
 Prometheus + Grafana monitoring. Currently degraded due to high cardinality
-metrics causing slow queries.
+metrics causing slow queries. 1
 
 ## Components
 

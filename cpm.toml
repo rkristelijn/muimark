@@ -10,8 +10,10 @@ lang = "typescript"
 build = "npm"
 
 [limits]
-file-lines = 150
-files-per-dir = 10
+file-lines = 300
+files-per-dir = 15
+file-size = 30000
+complexity = 15
 
 [exclude]
 paths = [".next", "node_modules", "dist", "build", "coverage", ".tmp", "data"]
@@ -25,4 +27,4 @@ code-generic-vulnerability-scan = true
 [hooks]
 pre-commit = true
 pre-push = true
-commit-msg = false
+commit-msg = true

@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDate } from "@/logic/time";
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   useReactTable,
@@ -27,13 +29,13 @@ import {
 import { useState, useEffect, useCallback } from "react";
 import type { FileEntry } from "@/shared/lib/files";
 import type { FolderDef } from "@/shared/lib/config";
-import { useColumnConfig } from "./useColumnConfig";
-import { ColumnConfigButton } from "./ColumnConfigButton";
-import { EditableCell } from "./EditableCell";
-import { CreateDialog } from "./CreateDialog";
-import { DeleteDialog } from "./DeleteDialog";
-import { RenameDialog } from "./RenameDialog";
-import { RelatedLinks } from "./RelatedLinks";
+import { useColumnConfig } from "@/logic/hooks/useColumnConfig";
+import { ColumnConfigButton } from "@/presentation/widgets/ColumnConfigButton";
+import { EditableCell } from "@/presentation/controls/EditableCell";
+import { CreateDialog } from "@/presentation/widgets/CreateDialog";
+import { DeleteDialog } from "@/presentation/widgets/DeleteDialog";
+import { RenameDialog } from "@/presentation/widgets/RenameDialog";
+import { RelatedLinks } from "@/presentation/controls/RelatedLinks";
 
 interface FileGridProps {
   folderId: string;
@@ -178,7 +180,7 @@ export function FileGrid({
         cell: (info) => {
           const val = info.getValue();
           if (!val) return null;
-          return <span>{new Date(val).toLocaleDateString("nl-NL")}</span>;
+          return <span>{formatDate(val)}</span>;
         },
       }),
       columnHelper.accessor((row) => row.git?.updatedBy as string, {

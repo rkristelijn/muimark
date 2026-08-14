@@ -1,7 +1,7 @@
 ---
 status: Closed
 priority: High
-scheduled: '2026-08-05T00:00:00.000Z'
+scheduled: '2026-07-27'
 relations:
   - I-001
   - I-003

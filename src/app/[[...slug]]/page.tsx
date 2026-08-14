@@ -3,17 +3,17 @@
 import { Box, Typography } from '@mui/material';
 import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { DashboardLayout } from '@/shared/ui';
-import { FileGrid } from '@/features/folders';
-import { DetailPanel } from '@/features/editor';
-import { SearchResults } from '@/features/search';
-import { CsvGrid } from '@/features/csv';
-import { useRouterState } from '@/state/useRouterState';
-import { useFolderData } from '@/state/useFolderData';
+import { DashboardLayout } from '@/presentation/panels/AppShell';
+import { FileGrid } from '@/features/folders/FileGrid';
+import { DetailPanel } from '@/presentation/panels/DetailPanel';
+import { SearchResults } from '@/presentation/widgets/SearchResults';
+import { CsvGrid } from '@/features/csv/CsvGrid';
+import { useRouterState } from '@/logic/hooks/useRouterState';
+import { useFolderData } from '@/logic/hooks/useFolderData';
 import dynamic from 'next/dynamic';
 
 const MarkdownEditor = dynamic(
-  () => import('@/features/editor/MarkdownEditor'),
+  () => import('@/presentation/widgets/MarkdownEditor'),
   { ssr: false }
 );
 

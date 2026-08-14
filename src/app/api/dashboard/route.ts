@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { listFiles } from "@/shared/lib/files";
 import type { FileEntry } from "@/shared/lib/files";
+import { isWithinDays as timeIsWithinDays, isCurrentYear, now as timeNow } from "@/logic/time";
 
 interface DashboardMetrics {
   timestamp: string;
@@ -58,15 +59,11 @@ function extractSeverity(file: FileEntry): string {
 }
 
 function isWithinDays(dateStr: string, days: number): boolean {
-  const date = new Date(dateStr);
-  const ago = new Date();
-  ago.setDate(ago.getDate() - days);
-  return date >= ago;
+  return timeIsWithinDays(dateStr, days);
 }
 
 function isThisYear(dateStr: string): boolean {
-  const date = new Date(dateStr);
-  return date.getFullYear() === new Date().getFullYear();
+  return isCurrentYear(dateStr);
 }
 
 export async function GET() {
@@ -182,7 +179,7 @@ export async function GET() {
   }
 
   const metrics: DashboardMetrics = {
-    timestamp: now.toISOString(),
+    timestamp: timeNow(),
     incidents: {
       total: totalInc,
       open: incOpen,
