@@ -34,7 +34,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import type { CsvColumnMeta, CsvMeta } from "@/shared/lib/csv";
 
-interface CsvRow extends Record<string, string> {}
+type CsvRow = Record<string, string>;
 
 interface CsvFileResponse {
   filename: string;

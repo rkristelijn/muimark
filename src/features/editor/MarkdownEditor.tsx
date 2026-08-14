@@ -40,7 +40,10 @@ interface MarkdownEditorProps {
 export default function MarkdownEditor({ content, onChange, onNavigate }: MarkdownEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const onChangeRef = useRef(onChange);
-  onChangeRef.current = onChange;
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
 
   const [isDark, setIsDark] = useState(() => {
     if (typeof window === 'undefined') return true;
