@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Needed for SonarCloud
+          fetch-depth: 0
 
       - uses: pnpm/action-setup@v4
 
@@ -27,12 +27,42 @@ jobs:
       - run: pnpm test:coverage
       - run: pnpm build
 
-      - name: Quality checks (informational)
-        continue-on-error: true
-        run: |
-          bash checks/check-component-size.sh 150
-          bash checks/check-max-usestate.sh 5
-          bash checks/check-no-fetch-in-components.sh
+  checks:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Component size (max 300 lines)
+        run: bash checks/check-component-size.sh 300
+
+      - name: Max useState per component (max 5)
+        run: bash checks/check-max-usestate.sh 5
+
+      - name: No fetch in presentational components
+        run: bash checks/check-no-fetch-in-components.sh
+
+      - name: Feature coverage
+        run: bash checks/check-feature-coverage.sh
+
+  cpm:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: cpm quality gate
+        uses: rkristelijn/cpm@main
+        with:
+          level: guide
+          tier: default
+
+  sonar:
+    runs-on: ubuntu-24.04
+    if: github.event_name == 'push'
+    needs: [test]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: SonarCloud Scan
         if: env.SONAR_TOKEN != ''

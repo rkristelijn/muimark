@@ -3,6 +3,7 @@ import path from "path";
 import matter from "gray-matter";
 import { getConfig, getFolderDef, getAbsolutePath, clearConfigCache } from "@/config/loader";
 import type { FolderDef } from "@/config/schema";
+import { today } from "@/logic/time";
 import type { DataAdapter, FileEntry, FileDetail, SearchResult } from "./types";
 
 function sanitizeFilename(name: string): string {
@@ -173,7 +174,7 @@ export const markdownAdapter: DataAdapter = {
         if (fieldValue) {
           frontmatter[field.name] = fieldValue;
         } else if (field.type === "date" && field.name.match(/date|created/)) {
-          frontmatter[field.name] = new Date().toISOString().slice(0, 10);
+          frontmatter[field.name] = today();
         } else if (field.type === "select") {
           const defaultOption = field.options?.[0];
           if (defaultOption) {

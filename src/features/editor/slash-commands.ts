@@ -128,21 +128,51 @@ sequenceDiagram
 \`\`\``,
   },
   {
-    id: 'callout',
-    label: 'Callout / Info',
-    description: 'Info callout block',
+    id: 'note',
+    label: 'Note',
+    description: 'Info/note admonition',
     icon: 'ℹ',
     category: 'block',
-    insert: `> **ℹ️ Note**
-> Important information here.`,
+    insert: `:::note
+Important information here.
+:::`,
+  },
+  {
+    id: 'tip',
+    label: 'Tip',
+    description: 'Tip admonition',
+    icon: '💡',
+    category: 'block',
+    insert: `:::tip
+Helpful tip here.
+:::`,
   },
   {
     id: 'warning',
     label: 'Warning',
-    description: 'Warning callout block',
+    description: 'Warning admonition',
     icon: '⚠',
     category: 'block',
-    insert: `> **⚠️ Warning**
-> Be careful with this.`,
+    insert: `:::caution
+Be careful with this.
+:::`,
+  },
+  {
+    id: 'danger',
+    label: 'Danger',
+    description: 'Danger admonition',
+    icon: '🚨',
+    category: 'block',
+    insert: `:::danger
+Critical warning here.
+:::`,
+  },
+  {
+    id: 'image',
+    label: 'Image',
+    description: 'Insert an image (paste or use toolbar 📷)',
+    icon: '🖼',
+    category: 'inline',
+    insert: `![alt text](url)`,
   },
 ];

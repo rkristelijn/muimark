@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Pre-commit hook: lint + typecheck staged files
+set -euo pipefail
+
+echo "pre-commit: running lint..."
+pnpm lint --quiet
+
+echo "pre-commit: running typecheck..."
+pnpm typecheck
+
+echo "pre-commit: OK"

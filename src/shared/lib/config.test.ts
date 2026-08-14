@@ -1,3 +1,5 @@
+// @covers F-005 Config discovery
+// @covers F-006 Folder discovery
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import fs from "fs";
 import path from "path";

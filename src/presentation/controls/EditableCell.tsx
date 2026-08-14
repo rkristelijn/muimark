@@ -8,6 +8,7 @@ import {
   TextField,
   type SelectChangeEvent,
 } from "@mui/material";
+import { formatDate } from "@/logic/time";
 import type { FieldDef } from "@/shared/lib/config";
 import { getOptionColor, normalizeOptions } from "@/logic/entities/field-options";
 import { RelatedLinks } from "./RelatedLinks";
@@ -37,23 +38,27 @@ export function EditableCell({ value, field, isActive, fileId, onSave, onNavigat
 
   // Read-only mode
   if (!isActive) {
-    return value ? (
-      field.type === "select" ? (
+    if (!value) return <span style={{ opacity: 0.3 }}>—</span>;
+
+    if (field.type === "select") {
+      return (
         <Chip
           label={value}
           size="small"
           variant="outlined"
           color={getOptionColor(field.options, value) || "default"}
         />
-      ) : (
-        onNavigate ? (
-          <RelatedLinks value={value} onNavigate={onNavigate} />
-        ) : (
-          <span>{value}</span>
-        )
-      )
+      );
+    }
+
+    if (field.type === "date") {
+      return <span>{formatDate(value)}</span>;
+    }
+
+    return onNavigate ? (
+      <RelatedLinks value={value} onNavigate={onNavigate} />
     ) : (
-      <span style={{ opacity: 0.3 }}>—</span>
+      <span>{value}</span>
     );
   }
 

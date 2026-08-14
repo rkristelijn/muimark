@@ -60,7 +60,7 @@ export function DetailPanel({ folderId, fileId, onNavigate }: DetailPanelProps) 
         />
       </Box>
       <Box sx={{ flex: 1, overflow: 'auto', p: 1 }} onBlur={saveNow}>
-        <MarkdownEditor content={content} onChange={setContent} onNavigate={onNavigate} />
+        <MarkdownEditor content={content} onChange={setContent} onNavigate={onNavigate} folderId={folderId} fileId={fileId} />
       </Box>
     </Box>
   );

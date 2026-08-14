@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDateTime } from "@/logic/time";
 import { useQuery } from "@tanstack/react-query";
 import {
   Box,
@@ -74,7 +75,7 @@ export default function DashboardPage() {
           </IconButton>
         </Tooltip>
         <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-          {new Date(data.timestamp).toLocaleString("nl-NL")}
+          {formatDateTime(data.timestamp)}
         </Typography>
       </Box>
 

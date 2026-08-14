@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDate } from "@/logic/time";
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   useReactTable,
@@ -178,7 +180,7 @@ export function FileGrid({
         cell: (info) => {
           const val = info.getValue();
           if (!val) return null;
-          return <span>{new Date(val).toLocaleDateString("nl-NL")}</span>;
+          return <span>{formatDate(val)}</span>;
         },
       }),
       columnHelper.accessor((row) => row.git?.updatedBy as string, {

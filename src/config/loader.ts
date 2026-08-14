@@ -1,3 +1,5 @@
+// @feature F-005 Config discovery — load .muimark.yaml or .config/itsm.yaml
+// @feature F-006 Folder discovery — auto-discover folders when no config exists
 import fs from "fs";
 import path from "path";
 import * as yaml from "js-yaml";

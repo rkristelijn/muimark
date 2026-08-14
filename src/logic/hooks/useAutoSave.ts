@@ -100,5 +100,43 @@ export function useAutoSave(folderId: string, fileId: string): AutoSaveState {
     if (saveStatus === 'dirty') doSave();
   }, [doSave, saveStatus]);
 
+  // Track saveStatus in a ref for use in event handlers (no stale closures)
+  const saveStatusRef = useRef(saveStatus);
+  useEffect(() => { saveStatusRef.current = saveStatus; }, [saveStatus]);
+
+  // Force save on page unload or tab hide
+  useEffect(() => {
+    const flush = () => {
+      if (contentRef.current && saveStatusRef.current === 'dirty') {
+        const frontmatter = fileRef.current?.frontmatter || {};
+        const body = JSON.stringify({ frontmatter, content: contentRef.current });
+        fetch(`/api/folders/${folderId}/${fileId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+          keepalive: true,
+        }).catch(() => {});
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') flush();
+    };
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (saveStatusRef.current === 'dirty') {
+        flush();
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [folderId, fileId]);
+
   return { content, setContent, saveStatus, saveNow, file, isLoading, isReady: initialized };
 }
