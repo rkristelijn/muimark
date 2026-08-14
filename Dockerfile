@@ -1,19 +1,33 @@
 FROM node:24-alpine AS builder
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci
+RUN corepack enable pnpm
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 COPY . .
-RUN npm run build
+RUN pnpm build
 
 FROM node:24-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
-RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/.next ./.next
+ENV HOSTNAME=0.0.0.0
+ENV PORT=3000
+
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+# Copy standalone output (includes server.js + minimal node_modules)
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/.config ./.config
+
+# Include demo data as default
+COPY --from=builder /app/data/demo ./data/demo
+ENV MUIMARK_DATA_DIR=/data
+
 USER nextjs
 EXPOSE 3000
-CMD ["npm", "start"]
+
+HEALTHCHECK --interval=5s --timeout=3s --retries=5 \
+  CMD wget -qO- http://localhost:3000/api/health || exit 1
+
+CMD ["node", "server.js"]

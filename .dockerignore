@@ -1,0 +1,9 @@
+node_modules
+.next
+.git
+.tmp
+coverage
+*.log
+e2e
+.config/vitest.config.ts
+playwright.config.ts

@@ -1,0 +1,28 @@
+# cpm.toml — project quality configuration
+# https://github.com/rkristelijn/cpm
+#
+# Run 'cpm check' to validate, 'cpm get' to inspect config.
+
+[project]
+name = "muimark"
+level = 2
+lang = "typescript"
+build = "npm"
+
+[limits]
+file-lines = 150
+files-per-dir = 10
+
+[exclude]
+paths = [".next", "node_modules", "dist", "build", "coverage", ".tmp", "data"]
+
+[checks]
+check-dutch = true
+docs-markdown-syntax-format = true
+code-generic-secrets-scan = true
+code-generic-vulnerability-scan = true
+
+[hooks]
+pre-commit = true
+pre-push = true
+commit-msg = false

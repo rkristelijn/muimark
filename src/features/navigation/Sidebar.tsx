@@ -11,7 +11,7 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
-import { MenuBook } from "@mui/icons-material";
+import { MenuBook, GridOn } from "@mui/icons-material";
 import type { FolderDef } from "@/shared/lib/config";
 import { FolderActions } from "@/features/folders/FolderActions";
 
@@ -72,7 +72,9 @@ export function Sidebar({ selectedFolder, onSelectFolder }: SidebarProps) {
             selected={selectedFolder === folder.id}
             onClick={() => onSelectFolder(folder.id)}
           >
-            <ListItemIcon><MenuBook /></ListItemIcon>
+            <ListItemIcon>
+              {folder.type === "csv" ? <GridOn /> : <MenuBook />}
+            </ListItemIcon>
             <ListItemText primary={folder.label} />
           </ListItemButton>
         ))}

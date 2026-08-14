@@ -14,6 +14,11 @@ export async function GET(
       return NextResponse.json({ error: "Folder not found" }, { status: 404 });
     }
 
+    // CSV folders don't have markdown files — return folder info only
+    if (folder.type === "csv") {
+      return NextResponse.json({ folder, files: [] });
+    }
+
     const files = listFiles(folderId);
 
     // Batch fetch git metadata

@@ -1,0 +1,34 @@
+# E2E test environment — tests muimark in Docker
+# Usage: docker compose -f docker-compose.test.yml up --abort-on-container-exit --exit-code-from e2e
+services:
+  app:
+    build: .
+    environment:
+      - MUIMARK_DATA_DIR=/data
+      - NODE_ENV=production
+    volumes:
+      - ./data/demo:/data:ro
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  e2e:
+    image: mcr.microsoft.com/playwright:v1.52.0-noble
+    depends_on:
+      app:
+        condition: service_healthy
+    environment:
+      - BASE_URL=http://app:3000
+    volumes:
+      - ./e2e:/tests/e2e:ro
+      - ./playwright.config.ts:/tests/playwright.config.ts:ro
+      - ./package.json:/tests/package.json:ro
+    working_dir: /tests
+    command: >
+      bash -c "npm install @playwright/test@1.52.0 --no-save --silent &&
+               npx playwright test --config playwright.config.ts"
