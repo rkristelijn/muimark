@@ -37,5 +37,8 @@ jobs:
       - name: SonarCloud Scan
         if: env.SONAR_TOKEN != ''
         uses: SonarSource/sonarcloud-github-action@v3
+        with:
+          projectBaseDir: .
+          args: -Dproject.settings=.config/sonar-project.properties
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

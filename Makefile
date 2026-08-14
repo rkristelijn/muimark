@@ -1,7 +1,7 @@
 # Muimark — Makefile
 # Run 'make check' for full quality gate.
 
-.PHONY: dev build check lint test typecheck quality-checks clean
+.PHONY: dev build check lint test typecheck quality-checks clean e2e e2e-docker
 
 # --- Development ---
 dev:
@@ -12,7 +12,7 @@ dev-iron:
 
 # --- Build ---
 build:
-	npm run build
+	pnpm build
 
 # --- Full quality gate ---
 check: typecheck lint test quality-checks
@@ -20,13 +20,20 @@ check: typecheck lint test quality-checks
 
 # --- Individual checks ---
 typecheck:
-	npm run typecheck
+	pnpm typecheck
 
 lint:
-	npm run lint
+	pnpm lint
 
 test:
-	npm run test
+	pnpm test
+
+# --- E2E ---
+e2e:
+	pnpm exec playwright test --config .config/playwright.config.ts
+
+e2e-docker:
+	docker compose -f .config/docker-compose.test.yml up --abort-on-container-exit --exit-code-from e2e
 
 # --- Custom quality checks ---
 quality-checks:
@@ -39,7 +46,4 @@ quality-checks:
 
 # --- Utilities ---
 clean:
-	rm -rf .next dist build coverage .tmp
-
-demo:
-	MUIMARK_DATA_DIR=./data/demo npm run dev
+	rm -rf .next dist build coverage .tmp tsconfig.tsbuildinfo
