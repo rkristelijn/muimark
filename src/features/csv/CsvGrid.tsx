@@ -29,6 +29,8 @@ import {
   TextField,
 } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import type { CsvColumnMeta, CsvMeta } from "@/shared/lib/csv";
 
@@ -111,15 +113,19 @@ function InlineEditCell({
   rowIndex,
   columnId,
   isFormula,
+  formula,
   format,
   onEdit,
+  onNavigateCell,
 }: {
   value: string;
   rowIndex: number;
   columnId: string;
   isFormula: boolean;
+  formula?: string;
   format?: string;
   onEdit: (rowIndex: number, columnId: string, value: string) => void;
+  onNavigateCell?: (rowIndex: number, columnId: string, direction: 'left' | 'right' | 'up' | 'down') => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
@@ -132,16 +138,33 @@ function InlineEditCell({
     }
   }, [editing]);
 
+  // Sync external value changes
+  useEffect(() => {
+    if (!editing) setEditValue(value);
+  }, [value, editing]);
+
   if (isFormula) {
     return (
-      <Typography
-        variant="body2"
-        sx={{ fontStyle: "italic", color: "text.secondary" }}
-      >
-        {formatValue(value, format)}
-      </Typography>
+      <Tooltip title={`ƒ = ${formula || 'formula'}`} placement="top" arrow>
+        <Typography
+          variant="body2"
+          sx={{ fontStyle: "italic", color: "text.secondary", cursor: "help" }}
+        >
+          {formatValue(value, format)}
+        </Typography>
+      </Tooltip>
     );
   }
+
+  const commitAndMove = (direction?: 'left' | 'right' | 'up' | 'down') => {
+    setEditing(false);
+    if (editValue !== value) {
+      onEdit(rowIndex, columnId, editValue);
+    }
+    if (direction && onNavigateCell) {
+      onNavigateCell(rowIndex, columnId, direction);
+    }
+  };
 
   if (editing) {
     return (
@@ -151,45 +174,59 @@ function InlineEditCell({
         variant="standard"
         value={editValue}
         onChange={(e) => setEditValue(e.target.value)}
-        onBlur={() => {
-          setEditing(false);
-          if (editValue !== value) {
-            onEdit(rowIndex, columnId, editValue);
-          }
-        }}
+        onBlur={() => commitAndMove()}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
-            setEditing(false);
-            if (editValue !== value) {
-              onEdit(rowIndex, columnId, editValue);
-            }
-          }
-          if (e.key === "Escape") {
+            e.preventDefault();
+            commitAndMove('down');
+          } else if (e.key === "Tab") {
+            e.preventDefault();
+            commitAndMove(e.shiftKey ? 'left' : 'right');
+          } else if (e.key === "Escape") {
             setEditing(false);
             setEditValue(value);
+          } else if (e.key === "ArrowUp" && e.ctrlKey) {
+            e.preventDefault();
+            commitAndMove('up');
+          } else if (e.key === "ArrowDown" && e.ctrlKey) {
+            e.preventDefault();
+            commitAndMove('down');
           }
         }}
-        sx={{ minWidth: 60 }}
+        sx={{ minWidth: 60, "& input": { py: 0.25, px: 0.5, fontSize: "0.875rem" } }}
       />
     );
   }
 
   return (
-    <Typography
-      variant="body2"
-      onDoubleClick={() => {
+    <Box
+      data-cell=""
+      data-row={String(rowIndex)}
+      data-col={columnId}
+      onClick={() => {
         setEditing(true);
         setEditValue(value);
+      }}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === "F2") {
+          setEditing(true);
+          setEditValue(value);
+        }
       }}
       sx={{
         cursor: "text",
         "&:hover": { backgroundColor: "action.hover", borderRadius: 0.5 },
+        "&:focus": { outline: "2px solid", outlineColor: "primary.main", borderRadius: 0.5 },
         px: 0.5,
         py: 0.25,
+        minHeight: 24,
       }}
     >
-      {formatValue(value, format)}
-    </Typography>
+      <Typography variant="body2" component="span">
+        {formatValue(value, format)}
+      </Typography>
+    </Box>
   );
 }
 
@@ -248,6 +285,41 @@ export function CsvGrid({ csvPath }: CsvGridProps) {
     setDirty(true);
   }, []);
 
+  const handleAddRow = useCallback(() => {
+    setLocalRows((prev) => {
+      if (!prev) return prev;
+      // Create empty row with all headers
+      const emptyRow: CsvRow = {};
+      for (const h of data?.headers || []) {
+        emptyRow[h] = "";
+      }
+      return [...prev, emptyRow];
+    });
+    setDirty(true);
+  }, [data?.headers]);
+
+  const handleDeleteRow = useCallback((rowIndex: number) => {
+    setLocalRows((prev) => {
+      if (!prev) return prev;
+      return prev.filter((_, i) => i !== rowIndex);
+    });
+    setDirty(true);
+  }, []);
+
+  // Auto-save 2s after last edit
+  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!dirty || !localRows) return;
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    autoSaveTimer.current = setTimeout(() => {
+      saveMutation.mutate(localRows);
+    }, 2000);
+    return () => {
+      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dirty, localRows]);
+
   const handleSave = useCallback(() => {
     if (localRows) {
       saveMutation.mutate(localRows);
@@ -296,8 +368,29 @@ export function CsvGrid({ csvPath }: CsvGridProps) {
             rowIndex={info.row.index}
             columnId={col.id}
             isFormula={col.type === "formula"}
+            formula={col.formula}
             format={col.format}
             onEdit={handleEdit}
+            onNavigateCell={(row, colId, direction) => {
+              // Find next focusable cell via DOM
+              const table = document.querySelector('[data-csv-grid]');
+              if (!table) return;
+              const allCells = Array.from(table.querySelectorAll<HTMLElement>('[data-cell]'));
+              const currentIdx = allCells.findIndex(
+                (el) => el.dataset.row === String(row) && el.dataset.col === colId
+              );
+              if (currentIdx === -1) return;
+
+              let targetIdx = currentIdx;
+              const colCount = colDefs.filter((c) => c.type !== 'formula').length;
+              if (direction === 'right') targetIdx = currentIdx + 1;
+              else if (direction === 'left') targetIdx = currentIdx - 1;
+              else if (direction === 'down') targetIdx = currentIdx + colCount;
+              else if (direction === 'up') targetIdx = currentIdx - colCount;
+
+              const target = allCells[targetIdx];
+              if (target) target.click();
+            }}
           />
         ),
         size: col.width || 150,
@@ -333,6 +426,11 @@ export function CsvGrid({ csvPath }: CsvGridProps) {
         )}
         <Box sx={{ flex: 1 }} />
         <Chip label={`${computedRows.length} rows`} size="small" variant="outlined" />
+        <Tooltip title="Add row">
+          <IconButton color="primary" onClick={handleAddRow} size="small">
+            <AddIcon />
+          </IconButton>
+        </Tooltip>
         {dirty && (
           <Tooltip title="Save changes (Ctrl+S)">
             <IconButton color="primary" onClick={handleSave} size="small">
@@ -343,7 +441,7 @@ export function CsvGrid({ csvPath }: CsvGridProps) {
       </Box>
 
       {/* Table */}
-      <TableContainer sx={{ flex: 1, overflow: "auto" }}>
+      <TableContainer sx={{ flex: 1, overflow: "auto" }} data-csv-grid="">
         <Table size="small" stickyHeader>
           <TableHead>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -377,7 +475,18 @@ export function CsvGrid({ csvPath }: CsvGridProps) {
           <TableBody>
             {table.getRowModel().rows.map((row, idx) => (
               <TableRow key={row.id} hover>
-                <TableCell sx={{ color: "text.disabled", fontSize: "0.75rem" }}>{idx + 1}</TableCell>
+                <TableCell sx={{ color: "text.disabled", fontSize: "0.75rem", p: 0.5 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                    <Typography variant="caption" sx={{ color: "text.disabled" }}>{idx + 1}</Typography>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleDeleteRow(idx)}
+                      sx={{ opacity: 0.3, "&:hover": { opacity: 1 }, p: 0.25 }}
+                    >
+                      <DeleteIcon sx={{ fontSize: 14 }} />
+                    </IconButton>
+                  </Box>
+                </TableCell>
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -385,6 +494,28 @@ export function CsvGrid({ csvPath }: CsvGridProps) {
                 ))}
               </TableRow>
             ))}
+          </TableBody>
+          {/* Totals row */}
+          <TableBody>
+            <TableRow sx={{ backgroundColor: "action.hover" }}>
+              <TableCell sx={{ fontWeight: 600, fontSize: "0.75rem" }}>Σ</TableCell>
+              {table.getHeaderGroups()[0]?.headers.map((header) => {
+                const colMeta = metaMap.get(header.id);
+                const isNumeric = colMeta?.type === "number" || colMeta?.type === "formula";
+                if (!isNumeric) return <TableCell key={header.id} />;
+                const sum = computedRows.reduce((acc, row) => {
+                  const val = parseFloat(row[header.id] ?? "0");
+                  return acc + (isNaN(val) ? 0 : val);
+                }, 0);
+                return (
+                  <TableCell key={header.id} sx={{ fontWeight: 600 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {formatValue(String(sum), colMeta?.format)}
+                    </Typography>
+                  </TableCell>
+                );
+              })}
+            </TableRow>
           </TableBody>
         </Table>
       </TableContainer>

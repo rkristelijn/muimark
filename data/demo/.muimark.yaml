@@ -96,3 +96,9 @@ folders:
       - name: url
         label: URL
         type: text
+
+  - id: inventory
+    label: Inventory
+    type: csv
+    path: data/inventory.csv
+    icon: grid_on

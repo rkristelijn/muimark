@@ -27,9 +27,11 @@ import {
   FolderOpen,
   LightMode,
   Menu as MenuIcon,
+  Refresh,
   Search as SearchIcon,
   Dashboard,
   Description,
+  GridOn,
 } from "@mui/icons-material";
 import { useQuery } from "@tanstack/react-query";
 import { useThemeMode } from "./ThemeContext";
@@ -38,8 +40,15 @@ import type { TreeNode } from "@/shared/lib/config";
 const DRAWER_WIDTH = 260;
 const DRAWER_WIDTH_COLLAPSED = 56;
 
+interface FolderItem {
+  id: string;
+  label: string;
+  type?: string;
+}
+
 interface FoldersResponse {
   tree: TreeNode[];
+  folders: FolderItem[];
 }
 
 interface DashboardLayoutProps {
@@ -267,6 +276,32 @@ export function DashboardLayout({
             }}
           />
         ))}
+        {/* CSV and other non-tree folders */}
+        {data?.folders
+          ?.filter((f) => f.type === "csv")
+          .map((f) => (
+            <Tooltip key={f.id} title={collapsed ? f.label : ""} placement="right">
+              <ListItemButton
+                selected={selectedFolder === f.id}
+                onClick={() => {
+                  onSelectFolder(f.id);
+                  setMobileOpen(false);
+                }}
+                sx={{
+                  minHeight: 36,
+                  pl: collapsed ? 1 : 2,
+                  justifyContent: collapsed ? "center" : "initial",
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: collapsed ? 0 : 28, mr: collapsed ? 0 : 1, justifyContent: "center" }}>
+                  <GridOn fontSize="small" />
+                </ListItemIcon>
+                {!collapsed && (
+                  <ListItemText primary={f.label} slotProps={{ primary: { variant: "body2" } }} />
+                )}
+              </ListItemButton>
+            </Tooltip>
+          ))}
       </List>
     </Box>
   );
@@ -338,6 +373,20 @@ export function DashboardLayout({
           </Box>
 
           <Box sx={{ flex: 1 }} />
+
+          {/* Refresh config */}
+          <Tooltip title="Reload config">
+            <IconButton
+              color="inherit"
+              onClick={() => {
+                fetch('/api/cache-clear', { method: 'POST' }).then(() => {
+                  window.location.reload();
+                });
+              }}
+            >
+              <Refresh />
+            </IconButton>
+          </Tooltip>
 
           {/* Theme Toggle */}
           <Tooltip title={mode === "dark" ? "Switch to light mode" : "Switch to dark mode"}>

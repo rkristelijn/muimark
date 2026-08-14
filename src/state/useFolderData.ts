@@ -83,8 +83,8 @@ export function useFolderData(selectedFolder: string | null): FolderDataState {
   return {
     folderDef: data?.folder,
     files: data?.files ?? [],
-    folderPath,
-    isCsv,
+    folderPath: folderPath || data?.folder?.path || null,
+    isCsv: isCsv || data?.folder?.type === 'csv',
     isLoading,
     selectFolder,
   };
