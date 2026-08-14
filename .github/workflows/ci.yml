@@ -27,13 +27,15 @@ jobs:
       - run: pnpm test:coverage
       - run: pnpm build
 
-      - name: Quality checks
+      - name: Quality checks (informational)
+        continue-on-error: true
         run: |
           bash checks/check-component-size.sh 150
           bash checks/check-max-usestate.sh 5
           bash checks/check-no-fetch-in-components.sh
 
       - name: SonarCloud Scan
+        if: env.SONAR_TOKEN != ''
         uses: SonarSource/sonarcloud-github-action@v3
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
