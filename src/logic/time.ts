@@ -10,9 +10,14 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/nl';
 
 dayjs.extend(relativeTime);
-dayjs.locale('nl');
+dayjs.locale(process.env.NEXT_PUBLIC_LOCALE || 'nl');
 
 export type DateInput = string | number | Date | null | undefined;
+
+/** BCP-47 locale for Intl APIs (e.g. "nl-NL", "en-US") */
+export const intlLocale = process.env.NEXT_PUBLIC_LOCALE
+  ? `${process.env.NEXT_PUBLIC_LOCALE}-${process.env.NEXT_PUBLIC_LOCALE.toUpperCase()}`
+  : 'nl-NL';
 
 /**
  * Parse any date-like value into a normalized internal representation.

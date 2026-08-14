@@ -1,5 +1,6 @@
 "use client";
 
+import { intlLocale } from "@/logic/time";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   useReactTable,
@@ -97,7 +98,7 @@ function formatValue(value: string, format?: string): string {
   const decimals = decimalMatch?.[1] ? decimalMatch[1].length : 0;
 
   // Format number
-  const formatted = num.toLocaleString("nl-NL", {
+  const formatted = num.toLocaleString(intlLocale, {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   });
