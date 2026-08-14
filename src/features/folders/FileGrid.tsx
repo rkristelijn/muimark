@@ -100,10 +100,14 @@ export function FileGrid({
   const { columnConfig, updateColumnConfig } = useColumnConfig(folderId);
 
   // Sync column config from server into TanStack Table state
+  const columnConfigKey = JSON.stringify(columnConfig);
   useEffect(() => {
     if (columnConfig.length === 0) {
-      // Default: hide git and relations columns
-      setColumnVisibility({ _relations: false, _updatedAt: false, _updatedBy: false });
+      setColumnVisibility((prev) => {
+        const next = { _relations: false, _updatedAt: false, _updatedBy: false };
+        if (JSON.stringify(prev) === JSON.stringify(next)) return prev;
+        return next;
+      });
       return;
     }
 
@@ -115,7 +119,8 @@ export function FileGrid({
 
     setColumnOrder(order);
     setColumnVisibility(visibility);
-  }, [columnConfig]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [columnConfigKey]);
 
   // Build columns from folder field definitions
   const columns = (() => {

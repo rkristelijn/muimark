@@ -2,7 +2,7 @@ dataDir: ../iron-legion
 folders:
   - id: incidents
     label: Incidents
-    path: incidents
+    path: docs/itsm/incidents
     icon: warning
     idPattern: ^(I-\d+)
     fields:
@@ -38,7 +38,7 @@ folders:
         type: text
   - id: problems
     label: Problems
-    path: problems
+    path: docs/itsm/problems
     icon: bug_report
     idPattern: ^(P-\d+)
     fields:
@@ -61,7 +61,7 @@ folders:
         type: text
   - id: changes
     label: Changes
-    path: changes
+    path: docs/itsm/changes
     icon: build
     idPattern: ^(SC-\d+)
     fields:
@@ -108,6 +108,7 @@ folders:
         options:
           - { value: Requested, color: default }
           - { value: Researching, color: info }
+          - { value: Investigating, color: warning }
           - { value: Approved, color: success }
           - { value: Rejected, color: error }
           - { value: Delivered, color: success }
@@ -119,7 +120,7 @@ folders:
         type: date
   - id: runbooks
     label: Runbooks
-    path: runbooks
+    path: docs/itsm/runbooks
     icon: menu_book
     idPattern: ^(RB-\d+)
     fields:
