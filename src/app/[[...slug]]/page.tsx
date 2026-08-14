@@ -3,11 +3,11 @@
 import { Box, Typography } from '@mui/material';
 import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { DashboardLayout } from '@/shared/ui';
-import { FileGrid } from '@/features/folders';
-import { DetailPanel } from '@/features/editor';
-import { SearchResults } from '@/features/search';
-import { CsvGrid } from '@/features/csv';
+import { DashboardLayout } from '@/shared/ui/DashboardLayout';
+import { FileGrid } from '@/features/folders/FileGrid';
+import { DetailPanel } from '@/features/editor/DetailPanel';
+import { SearchResults } from '@/features/search/SearchResults';
+import { CsvGrid } from '@/features/csv/CsvGrid';
 import { useRouterState } from '@/state/useRouterState';
 import { useFolderData } from '@/state/useFolderData';
 import dynamic from 'next/dynamic';

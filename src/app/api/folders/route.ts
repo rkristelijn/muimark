@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { listFolders, getTree, createFolder } from "@/shared/lib";
+import { listFolders, createFolder } from "@/shared/lib/files";
+import { getTree } from "@/shared/lib/config";
 
 export async function GET() {
   try {

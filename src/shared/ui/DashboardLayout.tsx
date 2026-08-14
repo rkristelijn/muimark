@@ -35,6 +35,7 @@ import {
 } from "@mui/icons-material";
 import { useQuery } from "@tanstack/react-query";
 import { useThemeMode } from "./ThemeContext";
+import { FolderActions } from "@/features/folders/FolderActions";
 import type { TreeNode } from "@/shared/lib/config";
 
 const DRAWER_WIDTH = 260;
@@ -234,6 +235,12 @@ export function DashboardLayout({
         <IconButton onClick={toggleCollapsed} size="small">
           {collapsed ? <MenuIcon /> : <ChevronLeft />}
         </IconButton>
+        {!collapsed && (
+          <FolderActions
+            folderId={selectedFolder ?? undefined}
+            onFolderCreated={onSelectFolder}
+          />
+        )}
       </Toolbar>
       <Divider />
       <List sx={{ flex: 1, overflow: "auto", py: 0.5 }}>
