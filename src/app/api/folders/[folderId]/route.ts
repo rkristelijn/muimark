@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { listFiles, createFile, deleteFolder, renameFolder } from "@/shared/lib/files";
 import { getFolderDef } from "@/shared/lib/config";
-import { getGitMetaBatch } from "@/shared/lib/git-meta";
+import { getGitMetaBatch } from "@/data/adapters/git-meta";
 
 export async function GET(
   _request: Request,

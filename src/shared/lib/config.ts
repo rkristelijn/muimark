@@ -4,4 +4,4 @@
  */
 export type { FieldDef, FolderDef, TreeNode, Config, FieldOption } from "@/config/schema";
 export { getConfig, getFolderDef, getAbsolutePath, getTree, clearConfigCache } from "@/config/loader";
-export { normalizeOptions, getOptionColor } from "./field-options";
+export { normalizeOptions, getOptionColor } from "@/logic/entities/field-options";

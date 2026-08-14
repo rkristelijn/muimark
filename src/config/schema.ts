@@ -1,4 +1,4 @@
-import type { FieldOption } from "@/shared/lib/field-options";
+import type { FieldOption } from "@/logic/entities/field-options";
 
 export type { FieldOption };
 

@@ -1,7 +1,8 @@
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
-import { getConfig, type FolderDef } from "./config";
+import { getConfig } from "@/config/loader";
+import type { FolderDef } from "@/config/schema";
 
 /**
  * Extract all #ID references from markdown content.

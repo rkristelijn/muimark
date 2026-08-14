@@ -9,7 +9,7 @@ import {
   type SelectChangeEvent,
 } from "@mui/material";
 import type { FieldDef } from "@/shared/lib/config";
-import { getOptionColor, normalizeOptions } from "@/shared/lib/field-options";
+import { getOptionColor, normalizeOptions } from "@/logic/entities/field-options";
 import { RelatedLinks } from "./RelatedLinks";
 
 interface EditableCellProps {

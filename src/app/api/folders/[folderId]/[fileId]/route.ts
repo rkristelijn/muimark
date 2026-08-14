@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getFile, saveFile, deleteFile, renameFile } from "@/shared/lib/files";
 import { getFolderDef, getAbsolutePath } from "@/shared/lib/config";
-import { indexRelations } from "@/shared/lib/relations";
+import { indexRelations } from "@/logic/entities/relations";
 import path from "path";
 
 export async function GET(

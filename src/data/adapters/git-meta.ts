@@ -1,6 +1,6 @@
 import { execSync } from "child_process";
 import path from "path";
-import { getConfig } from "./config";
+import { getConfig } from "@/config/loader";
 
 export interface GitMeta {
   createdAt: string | null;
