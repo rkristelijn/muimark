@@ -2,7 +2,7 @@
 
 import { Box, CircularProgress, Typography, Chip } from '@mui/material';
 import dynamic from 'next/dynamic';
-import { useAutoSave } from '@/state/useAutoSave';
+import { useAutoSave } from '@/logic/hooks/useAutoSave';
 
 const MarkdownEditor = dynamic(() => import('./MarkdownEditor'), { ssr: false });
 
