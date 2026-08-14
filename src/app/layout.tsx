@@ -5,7 +5,7 @@ import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import "./globals.css";
 import { Providers } from "./providers";
-import { BrowserErrorReporter } from "@/shared/ui/BrowserErrorReporter";
+import { BrowserErrorReporter } from "@/presentation/widgets/BrowserErrorReporter";
 
 export const metadata: Metadata = {
   title: "ITSM",

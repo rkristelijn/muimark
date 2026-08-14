@@ -8,8 +8,8 @@ import { FileGrid } from '@/features/folders/FileGrid';
 import { DetailPanel } from '@/presentation/panels/DetailPanel';
 import { SearchResults } from '@/presentation/widgets/SearchResults';
 import { CsvGrid } from '@/features/csv/CsvGrid';
-import { useRouterState } from '@/state/useRouterState';
-import { useFolderData } from '@/state/useFolderData';
+import { useRouterState } from '@/logic/hooks/useRouterState';
+import { useFolderData } from '@/logic/hooks/useFolderData';
 import dynamic from 'next/dynamic';
 
 const MarkdownEditor = dynamic(
